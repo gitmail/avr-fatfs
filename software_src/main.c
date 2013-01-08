@@ -48,7 +48,6 @@ void main(void){
 		  if(tmp==6) {}//send data
 		  if(tmp==7) {selfTest();}//init 
 		  tmp=0;
-	  
 	  }
 }
 void selfTest(void){
