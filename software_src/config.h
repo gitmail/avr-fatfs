@@ -50,8 +50,8 @@
 struct DATA {
    char  ID;
    char  Name[9]	  ;
-   unsigned int Index ;
-   char IndexChar[6]  ;
+   unsigned long Index ;
+   char IndexChar[8]  ;
    char  Date[9]	  ;
    char	Time[10] 	  ;
    float    Temperature	   ;  //ÎÂ¶È

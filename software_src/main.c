@@ -3,10 +3,12 @@
 const char tab[]="\t\0";
 const char enter[]="\n\0";
 char buffer[512];
+char TempChar[80]; //存放临时字串
 struct DATA Result;
 struct tm t;
 unsigned long now =0; 
 void debug(UINT8 *str,UINT8 val);
+void WriteSDFile(void);
 struct CONFIG config;
 void initDevices(void){
 	 DDRA=0XFF;
@@ -27,28 +29,30 @@ void initDevices(void){
 }
 void WriteFileHead(void) ;
 void selfTest(void);
+////////////////////////////////////////////////////////////////
 void main(void){
 	 UINT8 tmp,keycode;
+	 UINT8 buf512[513];
+	 char filename[]="201302.xls\0\0\0";
+	 int i=0;
 	 initDevices();
 	 dateRefresh(1);
 	 WriteFileHead();
+     Result.Index=findIndex(get_name(filename),buf512);
 	 while(1){
-	 check();
-	 StructToChar();
-	 Result.Index++;
-	 delayms(100);
+	     check();
+	 	 dateRefresh(1);
+	 	 StructToChar();
+	 	 WriteSDFile();
+	 	 debug("index ",Result.Index);
+		 Result.Index++;
+		 
+	 	 delayms(1);
 	 }
-	 while(1)
-	 {
-	  	  tmp=GUI_mainmeu();
-		  delayms(300);
-	      if(tmp==3) {GUI_check();}//check
-		  if(tmp==4) {GUI_set_time();}//setclock
-		  if(tmp==5) {}//lookup
-		  if(tmp==6) {}//send data
-		  if(tmp==7) {selfTest();}//init 
-		  tmp=0;
-	  }
+	
+	
+
+
 }
 void selfTest(void){
 	float tmp=0;
@@ -90,8 +94,8 @@ void WriteFileHead(void)
 	 FRESULT res;
 	 FATFS fs;
 	 FIL file;
-	 char fnamep[]="201301.xls\0\0\0"; 
-	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\t\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0";
+	 char fnamep[]="201201.xls\0\0\0"; 
+	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\r\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0";
 	 res=disk_initialize(0);
 	 #ifdef _DEBUG
 	 debug("dinit",res);
@@ -100,18 +104,140 @@ void WriteFileHead(void)
 	 #ifdef _DEBUG
  	 debug("dmnt",res);
 	 #endif
+	 //get_name(fnamep)
 	 res = f_open(&file, get_name(fnamep) , FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
 	 #ifdef _DEBUG
 	 debug("fopen",res);
 	 #endif
-	 res = f_write(&file,itam,128,&bw);   //bw 已写入字节数
+	 res = f_write(&file,itam,sizeof(itam),&bw);   //bw 已写入字节数
 	 #ifdef _DEBUG
 	 debug("fwrite",res);
 	 #endif
 	 f_close(&file);
 	 f_mount(0, NULL);
+} /////////////////////////////////////////////////
+//       写入文件函数 
+//(创建)打开文件 
+// data 指向欲写入的的字符串 64byt 
+//////////////////////////////////////////////// 
+void WriteSDFile(void)   
+{
+    unsigned int bw;
+	FRESULT res;
+	FATFS fs;
+    FIL file;
+	char fnamep[13];
+	long lenth=0;
+	disk_initialize(0);
+	res = f_mount(0, &fs);
+	res = f_open(&file,get_name(fnamep), FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
+	lenth=file.fsize;   
+	res = f_lseek (&file,lenth);	 
+	res = f_write(&file,TempChar,64,&bw);   //bw 已写入字节数
+	f_close(&file);
+	f_mount(0, NULL);
 }
- 
+/////////////////////////////////////////////////
+//       读取文件函数
+//以64byte为一块 读取
+//index数据偏移量   data读出后存放地
+//////////////////////////////////////////////// 
+char ReadSDFile(unsigned int index,char *data)
+{
+ 	unsigned int bw;
+	char res;
+	FATFS fs;
+    FIL file;
+	char fnamep[13];
+    get_name(fnamep); 
+    disk_initialize(0);
+    res = f_mount(0, &fs);
+    res = f_open(&file,fnamep,FA_READ);  
+    if(res==FR_NO_FILE) {data=NULL;
+    #if _debug >= 1 
+    debug_out("now file",255);
+	debug_out(filename,res);
+	debug_out("file is no exist....",255);
+    #endif 
+    return res;
+    }   
+    res = f_lseek (&file,(index+2)*64);	 //前两个字节数据为文件头空间 所以从第三块读/写起
+    res = f_read(&file,data,64,&bw);
+    f_close(&file);
+	f_mount(0, NULL);
+	return res;
+} 
+//////////////////////////////////
+//   find index
+// 检查当前文件尺寸，根据倒数第二个
+//'\n'及其后面的index确定当前index值
+//////////////////////////////////
+unsigned int findIndex(char *filename,char *buf){
+    unsigned int bw,tmp;
+	long index =0;
+	unsigned char is_first_end=0;
+	char *fnamep=filename;
+	FRESULT res;
+	FATFS fs;
+	FIL file;
+	long lenth=0;
+	int readsize=0;
+	//PrintString_n(fnamep);
+	res = f_mount(0, &fs);
+	res = f_open(&file,fnamep, FA_OPEN_ALWAYS | FA_READ );  //创建一个新的文件
+	if(res !=  FR_OK){ //openerror
+	    return res;}
+	lenth=file.fsize;   //文件尾部为 file.size 
+	//debug("size=",0xff);
+	//PrintLong(lenth);
+	if(lenth > 512) {
+	    readsize=512;
+		lenth=file.fsize;
+	}
+	else {
+	    readsize =file.fsize;
+		lenth=0;
+	}
+	res = f_lseek (&file,file.fsize-readsize);
+	//debug("readSIZE=",0x00);
+	//PrintLong((file.fsize-readsize));
+	res = f_read(&file,buf,readsize,&bw);
+	f_close(&file);
+	//debug("readRES=",res);
+	//debug("readbw=",0X00);
+	//PrintLong(bw);
+	//PrintString_n(buf);
+	for(tmp=readsize;tmp>0;tmp--){
+		//debug("buf index",buf[tmp]);
+		//PrintLong(tmp);
+		if(buf[tmp] == '\n') Usart_Transmit('@');						  
+		if(buf[tmp] == '\n' && is_first_end== 0){
+		    is_first_end=1; 	
+			//debug("first=",0xf0);					      
+		}
+		else if(buf[tmp] == '\n' && is_first_end== 1){
+		    lenth -= (512-tmp);
+			break;
+		} 						
+	}
+	//debug("start=",0X00); PrintLong(lenth);
+	if(lenth < 118 ){ 
+ 		return 1;
+	}
+	else {
+		 //debug(">128 ",0X00);
+		 while(buf[tmp] <= '0' || buf[tmp] >= '9') tmp++;
+		 //debug("nozero ",bw); PrintLong(tmp);
+		 while(buf[tmp] != 't' && buf[tmp] >= '0' && buf[tmp] <= '9'){
+		     index=index*10+(buf[tmp]-'0');
+		 	 //Usart_Transmit(buf[tmp]);	
+		 	 tmp++;
+		 }
+	}
+	//debug("index=",0X00);
+	//PrintLong(index+1);
+	return index+1;
+}
 void check( void )
 {
  unsigned char tmp;
@@ -184,18 +310,18 @@ void itochr(int a,char * dest){ //int to ascii
 // 将目前存于结构体的数据转换到Temp_Char中。
 ///////////////////////////////////////////////////////
 void  StructToChar(void)
-{ unsigned char i;
-  char Temp_Char[80];
+{ 
+  unsigned char i;
   char otherbyte[]="0\t0\t0\t0";
   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
 				Result.TeqChar
 			   };  //指向数组首地址的指针
   //strcat(Temp_Char,Result.Name);
-  for(i=0;i<=80;i++) Temp_Char[i]='\0';  //清空数组
+  for(i=0;i<=80;i++) TempChar[i]='\0';  //清空数组
     for(i=0;i<=7;i++){
-		strcat(Temp_Char,ary[i]);  // 按顺序复制字符串
-		strcat(Temp_Char,tab);     //
+		strcat(TempChar,ary[i]);  // 按顺序复制字符串
+		strcat(TempChar,tab);     // 字串结尾加上制表符
     }
 				 
 				 otherbyte[0]=otherbyte[0]+Result.WeiHai;
@@ -203,8 +329,9 @@ void  StructToChar(void)
 				 otherbyte[4]=otherbyte[0]+Result.MidLabor;
 				 otherbyte[6]=otherbyte[0]+Result.HighLabor;
  
-  strcat(Temp_Char,otherbyte);  
-  strcat(Temp_Char,enter);  
+  strcat(TempChar,otherbyte);  
+  strcat(TempChar,enter);  
+  strcat(TempChar,"\0\0");
 }
 
 //////////////////////////////////////////////////////
