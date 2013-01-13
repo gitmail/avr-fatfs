@@ -75,7 +75,7 @@ unsigned char GUI_mainmeu( void ){
 		 Set_White(1,2,8,1);
 		 Set_White(1,3,8,1);
 		 Set_White(1,4,8,1);
-		 beep(3,select);
+		 //beep(3,select);
 		 return select;
 		}
     }
@@ -106,37 +106,39 @@ void GUI_check(void)
 while(1){
  	key=kbscan();
 	//上键短按 选择
-	if(key==up && selectCheckMode == 1){  
+	if(key==up || key ==down){
+	    if(selectCheckMode == 1){
 		    selectCheckMode=0;
 			Set_White(1,2,8,0);
  			Set_White(1,3,8,1);
-			//delayms(500);
-	}
-	//下键短按	选择
-	if(key==down && selectCheckMode == 0){  
-		selectCheckMode=1;
-		Set_White(1,2,8,1);
- 		Set_White(1,3,8,0);
-	    //delayms(500);
+		}
+		else {
+		    selectCheckMode=1;
+			Set_White(1,2,8,1);
+ 			Set_White(1,3,8,0);
+		}
+		
 	}
 	//左键短按  进入
 	if(key == left) {
 		config.autocheck=selectCheckMode; 
 		Set_White(1,2,8,1);
  		Set_White(1,3,8,1);
-		delayms(500);
+		delayms(300);
 		break ;		
 	}
 	//右键短按  返回
 	if(key == right) {
 		return ;		
 	}
+	key=0;
 } //end of while
 if(config.autocheck == 1) {
-    next_step_time=now+config.checkDeltaTime;
+    next_step_time=now;
 }
 while(1){
 	key=kbscan();
+	if(key != 0) beep(0,1);
 	_GUI_datashow(1,page);
 	if(config.autocheck == 1 && now > next_step_time ){
 	    next_step_time=now+config.checkDeltaTime; //更新下一步操作时间
@@ -154,13 +156,11 @@ while(1){
 				 is_on=1; //start count
 	 //			 timer1_init(); //计数
 				}
-	if(is_on == 1 ){
+	if(is_on == 1 && page == 0){
 	    LCD_const_disp(4,1,"倒计时: ");
 	    LCD_print4num(4,5,config.time1-config.now);
 	}
-	else {
-	   LCD_const_disp(4,1,"            ");
-	}						
+						
 	if(is_on == 1 && config.now>=config.time1 ){
 	    is_on=0;
 	 	check(); //检测
@@ -169,18 +169,18 @@ while(1){
 		//zigbee_send(); //发送
 	 	Result.Index++; //索引自增一
  	} 	
-    if(key==left){ //左键 : 页面减 
+    if(key==up){ //上键 : 页面减 
 	    if(page>0) page--;
 	    LCD_CLR();
 	    LCD_Init();
 	}
-	if(key==right){ //右键 ： 页面加
+	if(key==down){ //下键 ： 页面加
 	    if(page<5) page++;
 	  	else page = 0;
 	    LCD_CLR();
 	    LCD_Init();
 	}
-	if(key==down && is_on==0){	//长安右键 退出
+	if(key==right && is_on==0){	//右键 退出
 	    LCD_CLR();
 	 	LCD_Init();	  
  	 	LCD_const_disp(4,5,"退出    "); 
@@ -474,9 +474,17 @@ void GUI_set_time(void){
 		  }
  delayms(2);	  
 }//endwhile(1)
-
-
 }
+
+void GUI_welcome(void){
+    LCD_CLR(); //清屏
+	LCD_const_disp(2,3,"欢迎使用");
+	LCD_const_disp(3,1,"环境冷强度检测仪");
+	delayms(800);
+	beep(0,1);
+	
+}
+
 ////////////////////////////////////
 //  函数作用
 //   将ds1302中缓存的时钟数据转换进结构体中

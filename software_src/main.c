@@ -11,6 +11,7 @@ void debug(UINT8 *str,UINT8 val);
 void WriteSDFile(void);
 struct CONFIG config;
 void initDevices(void){
+     CLI();
 	 DDRA=0XFF;
 	 PORTA=0XFF;
 	 DDRB=0XFF;
@@ -27,6 +28,7 @@ void initDevices(void){
 	 config.THRESHOLD_delta_sec=10; //一次检测用时
 	 config.autocheck=0;
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
+	 SEI();
 }
 
 ////////////////////////////////////////////////////////////////
@@ -39,7 +41,8 @@ void main(void){
 	 dateRefresh(1);
 	 WriteFileHead();
      Result.Index=findIndex(get_name(filename),buf512);
-	 selfTest();
+	 //selfTest();
+	 GUI_welcome();
 	 while(1){
 	    tmp=GUI_mainmeu();
 		switch(tmp){
