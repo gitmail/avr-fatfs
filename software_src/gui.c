@@ -164,10 +164,10 @@ while(1){
 	if(is_on == 1 && config.now>=config.time1 ){
 	    is_on=0;
 	 	check(); //¼ì²â
-		StructToChar();
-		WriteSDFile();
-	 	//debug("index ",Result.Index);
-		Result.Index++;
+		StructToChar(); //×ª³É×Ö·û´®
+		WriteSDFile();  //Ğ´Èësd¿¨
+		//zigbee_send(); //·¢ËÍ
+	 	Result.Index++; //Ë÷Òı×ÔÔöÒ»
  	} 	
     if(key==left){ //×ó¼ü : Ò³Ãæ¼õ 
 	    if(page>0) page--;

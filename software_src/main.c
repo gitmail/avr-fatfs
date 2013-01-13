@@ -26,7 +26,7 @@ void initDevices(void){
 	 LCD_SW(1);
 	 config.THRESHOLD_delta_sec=10; //一次检测用时
 	 config.autocheck=0;
-	 config.checkDeltaTime=20;
+	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
 }
 
 ////////////////////////////////////////////////////////////////
@@ -39,15 +39,18 @@ void main(void){
 	 dateRefresh(1);
 	 WriteFileHead();
      Result.Index=findIndex(get_name(filename),buf512);
+	 selfTest();
 	 while(1){
-	     check();
-	 	 dateRefresh(1);
-	 	 StructToChar();
-	 	 WriteSDFile();
-	 	 debug("index ",Result.Index);
-		 Result.Index++;
-		 
-	 	 delayms(1);
+	    tmp=GUI_mainmeu();
+		switch(tmp){
+		    case 3 : GUI_check(); break; 
+			case 4 : GUI_set_time(); break ;
+			//case 5 : GUI_read_back(); break;
+			//case 6 : GUI_send_date();
+			case 7 : selfTest(); break ;
+			default : break;
+	   }
+	   delayms(100);
 	 }
 
 }

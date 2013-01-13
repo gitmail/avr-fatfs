@@ -11961,7 +11961,7 @@ _main:
     02446 97EF      SBIW	R28,0x3F
     02447 97EF      SBIW	R28,0x3F
     02448 9767      SBIW	R28,0x17
-(0029) 	 config.checkDeltaTime=20;
+(0029) 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
 (0030) }
 (0031) 
 (0032) ////////////////////////////////////////////////////////////////
@@ -12004,17 +12004,17 @@ _main:
     02468 9250 054F STS	Result+13,R5
     0246A 9240 054E STS	Result+12,R4
     0246C C02E      RJMP	0x249B
-(0042) 	 while(1){
-(0043) 	     check();
+(0042) 	 selfTest();
+(0043) 	 while(1){
     0246D D394      RCALL	_check
-(0044) 	 	 dateRefresh(1);
+(0044) 	    tmp=GUI_mainmeu();
     0246E E001      LDI	R16,1
     0246F 940E 3466 CALL	_dateRefresh
-(0045) 	 	 StructToChar();
+(0045) 		switch(tmp){
     02471 D50F      RCALL	_StructToChar
-(0046) 	 	 WriteSDFile();
+(0046) 		    case 3 : GUI_check(); break; 
     02472 D168      RCALL	_WriteSDFile
-(0047) 	 	 debug("index ",Result.Index);
+(0047) 			case 4 : GUI_set_time(); break ;
     02473 9040 054E LDS	R4,Result+12
     02475 9050 054F LDS	R5,Result+13
     02477 9020 054C LDS	R2,Result+10
@@ -12023,7 +12023,7 @@ _main:
     0247C E40A      LDI	R16,0x4A
     0247D E012      LDI	R17,2
     0247E D686      RCALL	_debug
-(0048) 		 Result.Index++;
+(0048) 			//case 5 : GUI_read_back(); break;
     0247F E081      LDI	R24,1
     02480 E090      LDI	R25,0
     02481 E0A0      LDI	R26,0
@@ -12040,8 +12040,8 @@ _main:
     02491 9220 054C STS	Result+10,R2
     02493 9250 054F STS	Result+13,R5
     02495 9240 054E STS	Result+12,R4
-(0049) 		 
-(0050) 	 	 delayms(1);
+(0049) 			//case 6 : GUI_send_date();
+(0050) 			case 7 : selfTest(); break ;
     02497 E001      LDI	R16,1
     02498 E010      LDI	R17,0
     02499 940E 23FC CALL	_delayms
@@ -12061,14 +12061,14 @@ _selfTest:
   str1                 --> Y,+6
   tmp                  --> Y,+2
     024A6 9762      SBIW	R28,0x12
-(0051) 	 }
-(0052) 
-(0053) }
-(0054) void selfTest(void){
-(0055) 	float tmp=0;                                                                
-(0056) 	char str1[6],str2[6];
-(0057) 	
-(0058) 	 //自检程序
+(0051) 			default : break;
+(0052) 	   }
+(0053) 	   delayms(100);
+(0054) 	 }
+(0055) 
+(0056) }
+(0057) void selfTest(void){
+(0058) 	float tmp=0;                                                                
     024A7 EB04      LDI	R16,0xB4
     024A8 E010      LDI	R17,0
     024A9 940E 3EF5 CALL	elpm32
@@ -12076,28 +12076,28 @@ _selfTest:
     024AC 831B      STD	Y+3,R17
     024AD 832C      STD	Y+4,R18
     024AE 833D      STD	Y+5,R19
-(0059) 	lp("自检程序");delayms(500);
-(0060) 	lp("外部温度 ");
-(0061) 	tmp=read_T_NUM(0);
-(0062) 	ftochr(tmp,str1);
+(0059) 	char str1[6],str2[6];
+(0060) 	
+(0061) 	 //自检程序
+(0062) 	lp("自检程序");delayms(500);
     024AF E401      LDI	R16,0x41
     024B0 E012      LDI	R17,2
     024B1 940E 3AD5 CALL	_lp
     024B3 EF04      LDI	R16,0xF4
     024B4 E011      LDI	R17,1
     024B5 940E 23FC CALL	_delayms
-(0063) 	str1[6]=0;
+(0063) 	lp("外部温度 ");
     024B7 E307      LDI	R16,0x37
     024B8 E012      LDI	R17,2
     024B9 940E 3AD5 CALL	_lp
-(0064) 	lp(str1);
+(0064) 	tmp=read_T_NUM(0);
     024BB 2700      CLR	R16
     024BC 940E 3D08 CALL	_read_T_NUM
     024BE 830A      STD	Y+2,R16
     024BF 831B      STD	Y+3,R17
     024C0 832C      STD	Y+4,R18
     024C1 833D      STD	Y+5,R19
-(0065) 	delayms(500);
+(0065) 	ftochr(tmp,str1);
     024C2 01CE      MOVW	R24,R28
     024C3 9606      ADIW	R24,6
     024C4 8399      STD	Y+1,R25
@@ -12107,30 +12107,30 @@ _selfTest:
     024C8 812C      LDD	R18,Y+4
     024C9 813D      LDD	R19,Y+5
     024CA D465      RCALL	_ftochr
-(0066) 	lp("内部温度");
+(0066) 	str1[6]=0;
     024CB 2422      CLR	R2
     024CC 862C      STD	Y+12,R2
-(0067) 	tmp=read_T_NUM(1);
+(0067) 	lp(str1);
     024CD 018E      MOVW	R16,R28
     024CE 5F0A      SUBI	R16,0xFA
     024CF 4F1F      SBCI	R17,0xFF
     024D0 940E 3AD5 CALL	_lp
-(0068) 	ftochr(tmp,str2);
+(0068) 	delayms(500);
     024D2 EF04      LDI	R16,0xF4
     024D3 E011      LDI	R17,1
     024D4 940E 23FC CALL	_delayms
-(0069) 	str2[6]=0;
+(0069) 	lp("内部温度");
     024D6 E20E      LDI	R16,0x2E
     024D7 E012      LDI	R17,2
     024D8 940E 3AD5 CALL	_lp
-(0070) 	lp(str2);
+(0070) 	tmp=read_T_NUM(1);
     024DA E001      LDI	R16,1
     024DB 940E 3D08 CALL	_read_T_NUM
     024DD 830A      STD	Y+2,R16
     024DE 831B      STD	Y+3,R17
     024DF 832C      STD	Y+4,R18
     024E0 833D      STD	Y+5,R19
-(0071) 	delayms(500);
+(0071) 	ftochr(tmp,str2);
     024E1 01CE      MOVW	R24,R28
     024E2 960C      ADIW	R24,0xC
     024E3 8399      STD	Y+1,R25
@@ -12140,26 +12140,26 @@ _selfTest:
     024E7 812C      LDD	R18,Y+4
     024E8 813D      LDD	R19,Y+5
     024E9 D446      RCALL	_ftochr
-(0072) 	lp("风速脉冲：");delayms(500);
+(0072) 	str2[6]=0;
     024EA 2422      CLR	R2
     024EB 8A2A      STD	Y+18,R2
-(0073) 	lp("蜂鸣器"); beep(2,2);delayms(500);
+(0073) 	lp(str2);
     024EC 018E      MOVW	R16,R28
     024ED 5F04      SUBI	R16,0xF4
     024EE 4F1F      SBCI	R17,0xFF
     024EF 940E 3AD5 CALL	_lp
-(0074) 	lp("power 指示灯");
+(0074) 	delayms(500);
     024F1 EF04      LDI	R16,0xF4
     024F2 E011      LDI	R17,1
     024F3 940E 23FC CALL	_delayms
-(0075) 	LED_OFF();delayms(100);LED_ON();delayms(100);
+(0075) 	lp("风速脉冲：");delayms(500);
     024F5 E203      LDI	R16,0x23
     024F6 E012      LDI	R17,2
     024F7 940E 3AD5 CALL	_lp
     024F9 EF04      LDI	R16,0xF4
     024FA E011      LDI	R17,1
     024FB 940E 23FC CALL	_delayms
-(0076) 	LED_OFF();delayms(100);LED_ON();delayms(100);
+(0076) 	lp("蜂鸣器"); beep(2,2);delayms(500);
     024FD E10C      LDI	R16,0x1C
     024FE E012      LDI	R17,2
     024FF 940E 3AD5 CALL	_lp
@@ -12169,11 +12169,11 @@ _selfTest:
     02505 EF04      LDI	R16,0xF4
     02506 E011      LDI	R17,1
     02507 940E 23FC CALL	_delayms
-(0077) 	LED_OFF();delayms(100);LED_ON();delayms(100);
+(0077) 	lp("power 指示灯");
     02509 E00F      LDI	R16,0xF
     0250A E012      LDI	R17,2
     0250B 940E 3AD5 CALL	_lp
-(0078) 	delayms(500);
+(0078) 	LED_OFF();delayms(100);LED_ON();delayms(100);
     0250D 9AA7      SBI	0x14,7
     0250E 98AF      CBI	0x15,7
     0250F E604      LDI	R16,0x64
@@ -12184,7 +12184,7 @@ _selfTest:
     02515 E604      LDI	R16,0x64
     02516 E010      LDI	R17,0
     02517 940E 23FC CALL	_delayms
-(0079) 	lp("加热开关");
+(0079) 	LED_OFF();delayms(100);LED_ON();delayms(100);
     02519 9AA7      SBI	0x14,7
     0251A 98AF      CBI	0x15,7
     0251B E604      LDI	R16,0x64
@@ -12195,7 +12195,7 @@ _selfTest:
     02521 E604      LDI	R16,0x64
     02522 E010      LDI	R17,0
     02523 940E 23FC CALL	_delayms
-(0080) 	RELAY_ON();delayms(100);  
+(0080) 	LED_OFF();delayms(100);LED_ON();delayms(100);
     02525 9AA7      SBI	0x14,7
     02526 98AF      CBI	0x15,7
     02527 E604      LDI	R16,0x64
@@ -12206,42 +12206,42 @@ _selfTest:
     0252D E604      LDI	R16,0x64
     0252E E010      LDI	R17,0
     0252F 940E 23FC CALL	_delayms
-(0081) 	RELAY_OFF();delayms(100);
+(0081) 	delayms(500);
     02531 EF04      LDI	R16,0xF4
     02532 E011      LDI	R17,1
     02533 940E 23FC CALL	_delayms
-(0082) 	RELAY_ON();delayms(100);
+(0082) 	lp("加热开关");
     02535 E006      LDI	R16,6
     02536 E012      LDI	R17,2
     02537 940E 3AD5 CALL	_lp
-(0083) 	RELAY_OFF();delayms(100);
+(0083) 	RELAY_ON();delayms(100);  
     02539 9AAD      SBI	0x15,5
     0253A E604      LDI	R16,0x64
     0253B E010      LDI	R17,0
     0253C 940E 23FC CALL	_delayms
-(0084) 	lp("  ");delayms(500);
+(0084) 	RELAY_OFF();delayms(100);
     0253E 98AD      CBI	0x15,5
     0253F E604      LDI	R16,0x64
     02540 E010      LDI	R17,0
     02541 940E 23FC CALL	_delayms
-(0085) 	lp("完成自检");delayms(500);
+(0085) 	RELAY_ON();delayms(100);
     02543 9AAD      SBI	0x15,5
     02544 E604      LDI	R16,0x64
     02545 E010      LDI	R17,0
     02546 940E 23FC CALL	_delayms
-(0086) 	  
+(0086) 	RELAY_OFF();delayms(100);
     02548 98AD      CBI	0x15,5
     02549 E604      LDI	R16,0x64
     0254A E010      LDI	R17,0
     0254B 940E 23FC CALL	_delayms
-(0087) }
+(0087) 	lp("  ");delayms(500);
     0254D E003      LDI	R16,3
     0254E E012      LDI	R17,2
     0254F 940E 3AD5 CALL	_lp
     02551 EF04      LDI	R16,0xF4
     02552 E011      LDI	R17,1
     02553 940E 23FC CALL	_delayms
-(0088) void WriteFileHead(void)   
+(0088) 	lp("完成自检");delayms(500);
     02555 EF0A      LDI	R16,0xFA
     02556 E011      LDI	R17,1
     02557 940E 3AD5 CALL	_lp
@@ -12270,15 +12270,15 @@ _WriteFileHead:
     0256A 97EF      SBIW	R28,0x3F
     0256B 97EF      SBIW	R28,0x3F
     0256C 97AA      SBIW	R28,0x2A
-(0089) {
-(0090)  	 unsigned int bw;
-(0091) 	 FRESULT res;
-(0092) 	 FATFS fs;
-(0093) 	 FIL file;
-(0094) 	 char fnamep[]="201201.xls\0\0\0"; 
-(0095) 	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\r\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0";
-(0096) 	 res=disk_initialize(0);
-(0097) 	 #ifdef _DEBUG
+(0089) 	  
+(0090) }
+(0091) void WriteFileHead(void)   
+(0092) {
+(0093)  	 unsigned int bw;
+(0094) 	 FRESULT res;
+(0095) 	 FATFS fs;
+(0096) 	 FIL file;
+(0097) 	 char fnamep[]="201201.xls\0\0\0"; 
     0256D E287      LDI	R24,0x27
     0256E E091      LDI	R25,1
     0256F 01FE      MOVW	R30,R28
@@ -12291,7 +12291,7 @@ _WriteFileHead:
     02576 939A      ST	-Y,R25
     02577 938A      ST	-Y,R24
     02578 940E 4014 CALL	asgnblk
-(0098) 	 debug("dinit",res);
+(0098) 	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\r\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0";
     0257A E385      LDI	R24,0x35
     0257B E091      LDI	R25,1
     0257C 01FE      MOVW	R30,R28
@@ -12303,33 +12303,33 @@ _WriteFileHead:
     02582 939A      ST	-Y,R25
     02583 938A      ST	-Y,R24
     02584 940E 4014 CALL	asgnblk
-(0099) 	 #endif
+(0099) 	 res=disk_initialize(0);
     02586 2700      CLR	R16
     02587 940E 0282 CALL	_disk_initialize
     02589 2EA0      MOV	R10,R16
-(0100) 	 res = f_mount(0, &fs);
-(0101) 	 #ifdef _DEBUG
+(0100) 	 #ifdef _DEBUG
+(0101) 	 debug("dinit",res);
     0258A 2D2A      MOV	R18,R10
     0258B EF04      LDI	R16,0xF4
     0258C E011      LDI	R17,1
     0258D D577      RCALL	_debug
-(0102)  	 debug("dmnt",res);
-(0103) 	 #endif
+(0102) 	 #endif
+(0103) 	 res = f_mount(0, &fs);
     0258E 019E      MOVW	R18,R28
     0258F 542F      SUBI	R18,0x4F
     02590 4F3F      SBCI	R19,0xFF
     02591 2700      CLR	R16
     02592 940E 166E CALL	_f_mount
     02594 2EA0      MOV	R10,R16
-(0104) 	 //get_name(fnamep)
-(0105) 	 res = f_open(&file, get_name(fnamep) , FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
+(0104) 	 #ifdef _DEBUG
+(0105)  	 debug("dmnt",res);
     02595 2D2A      MOV	R18,R10
     02596 EE0F      LDI	R16,0xEF
     02597 E011      LDI	R17,1
     02598 D56C      RCALL	_debug
-(0106) 	 #ifdef _DEBUG
-(0107) 	 debug("fopen",res);
-(0108) 	 #endif
+(0106) 	 #endif
+(0107) 	 //get_name(fnamep)
+(0108) 	 res = f_open(&file, get_name(fnamep) , FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
     02599 018E      MOVW	R16,R28
     0259A 550F      SUBI	R16,0x5F
     0259B 4F1F      SBCI	R17,0xFF
@@ -12344,14 +12344,14 @@ _WriteFileHead:
     025A4 940E 1699 CALL	_f_open
     025A6 2EC0      MOV	R12,R16
     025A7 2CAC      MOV	R10,R12
-(0109) 	 res = f_write(&file,itam,sizeof(itam),&bw);   //bw 已写入字节数
-(0110) 	 #ifdef _DEBUG
+(0109) 	 #ifdef _DEBUG
+(0110) 	 debug("fopen",res);
     025A8 2D2A      MOV	R18,R10
     025A9 EE09      LDI	R16,0xE9
     025AA E011      LDI	R17,1
     025AB D559      RCALL	_debug
-(0111) 	 debug("fwrite",res);
-(0112) 	 #endif
+(0111) 	 #endif
+(0112) 	 res = f_write(&file,itam,sizeof(itam),&bw);   //bw 已写入字节数
     025AC 01CE      MOVW	R24,R28
     025AD 5581      SUBI	R24,0x51
     025AE 4F9F      SBCI	R25,0xFF
@@ -12370,19 +12370,19 @@ _WriteFileHead:
     025BB 940E 1AA0 CALL	_f_write
     025BD 2EC0      MOV	R12,R16
     025BE 2CAC      MOV	R10,R12
-(0113) 	 f_close(&file);
-(0114) 	 f_mount(0, NULL);
+(0113) 	 #ifdef _DEBUG
+(0114) 	 debug("fwrite",res);
     025BF 2D2A      MOV	R18,R10
     025C0 EE02      LDI	R16,0xE2
     025C1 E011      LDI	R17,1
     025C2 D542      RCALL	_debug
-(0115) } /////////////////////////////////////////////////
-(0116) //       写入文件函数 
+(0115) 	 #endif
+(0116) 	 f_close(&file);
     025C3 018E      MOVW	R16,R28
     025C4 5F0C      SUBI	R16,0xFC
     025C5 4F1F      SBCI	R17,0xFF
     025C6 940E 1E6A CALL	_f_close
-(0117) //(创建)打开文件 
+(0117) 	 f_mount(0, NULL);
     025C8 2722      CLR	R18
     025C9 2733      CLR	R19
     025CA 2700      CLR	R16
@@ -12419,34 +12419,34 @@ _WriteSDFile:
     025E4 97EF      SBIW	R28,0x3F
     025E5 97EF      SBIW	R28,0x3F
     025E6 97E0      SBIW	R28,0x30
-(0118) // data 指向欲写入的的字符串 64byt 
-(0119) //////////////////////////////////////////////// 
-(0120) void WriteSDFile(void)   
-(0121) {
-(0122)     unsigned int bw;
-(0123) 	FRESULT res;
-(0124) 	FATFS fs;
-(0125)     FIL file;
-(0126) 	char fnamep[13];
-(0127) 	long lenth=0;
-(0128) 	disk_initialize(0);
-(0129) 	res = f_mount(0, &fs);
-(0130) 	res = f_open(&file,get_name(fnamep), FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
+(0118) } /////////////////////////////////////////////////
+(0119) //       写入文件函数 
+(0120) //(创建)打开文件 
+(0121) // data 指向欲写入的的字符串 64byt 
+(0122) //////////////////////////////////////////////// 
+(0123) void WriteSDFile(void)   
+(0124) {
+(0125)     unsigned int bw;
+(0126) 	FRESULT res;
+(0127) 	FATFS fs;
+(0128)     FIL file;
+(0129) 	char fnamep[13];
+(0130) 	long lenth=0;
     025E7 E080      LDI	R24,0
     025E8 A38E      STD	Y+38,R24
     025E9 A38F      STD	Y+39,R24
     025EA A788      STD	Y+40,R24
     025EB A789      STD	Y+41,R24
-(0131) 	lenth=file.fsize;   
+(0131) 	disk_initialize(0);
     025EC 2700      CLR	R16
     025ED 940E 0282 CALL	_disk_initialize
-(0132) 	res = f_lseek (&file,lenth);	 
+(0132) 	res = f_mount(0, &fs);
     025EF 019E      MOVW	R18,R28
     025F0 5D24      SUBI	R18,0xD4
     025F1 4F3F      SBCI	R19,0xFF
     025F2 2700      CLR	R16
     025F3 940E 166E CALL	_f_mount
-(0133) 	res = f_write(&file,TempChar,64,&bw);   //bw 已写入字节数
+(0133) 	res = f_open(&file,get_name(fnamep), FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
     025F5 018E      MOVW	R16,R28
     025F6 5A06      SUBI	R16,0xA6
     025F7 4F1D      SBCI	R17,0xFD
@@ -12458,7 +12458,7 @@ _WriteSDFile:
     025FD 5F0C      SUBI	R16,0xFC
     025FE 4F1F      SBCI	R17,0xFF
     025FF 940E 1699 CALL	_f_open
-(0134) 	f_close(&file);
+(0134) 	lenth=file.fsize;   
     02601 842E      LDD	R2,Y+14
     02602 843F      LDD	R3,Y+15
     02603 8848      LDD	R4,Y+16
@@ -12467,7 +12467,7 @@ _WriteSDFile:
     02606 A23F      STD	Y+39,R3
     02607 A648      STD	Y+40,R4
     02608 A659      STD	Y+41,R5
-(0135) 	f_mount(0, NULL);
+(0135) 	res = f_lseek (&file,lenth);	 
     02609 A02E      LDD	R2,Y+38
     0260A A03F      LDD	R3,Y+39
     0260B A448      LDD	R4,Y+40
@@ -12479,7 +12479,7 @@ _WriteSDFile:
     02611 5F0C      SUBI	R16,0xFC
     02612 4F1F      SBCI	R17,0xFF
     02613 940E 1E7A CALL	_f_lseek
-(0136) }
+(0136) 	res = f_write(&file,TempChar,64,&bw);   //bw 已写入字节数
     02615 01CE      MOVW	R24,R28
     02616 968A      ADIW	R24,0x2A
     02617 839B      STD	Y+3,R25
@@ -12496,12 +12496,12 @@ _WriteSDFile:
     02622 940E 1AA0 CALL	_f_write
     02624 2EC0      MOV	R12,R16
     02625 2CAC      MOV	R10,R12
-(0137) /////////////////////////////////////////////////
+(0137) 	f_close(&file);
     02626 018E      MOVW	R16,R28
     02627 5F0C      SUBI	R16,0xFC
     02628 4F1F      SBCI	R17,0xFF
     02629 940E 1E6A CALL	_f_close
-(0138) //       读取文件函数
+(0138) 	f_mount(0, NULL);
     0262B 2722      CLR	R18
     0262C 2733      CLR	R19
     0262D 2700      CLR	R16
@@ -12540,34 +12540,34 @@ _ReadSDFile:
     02648 97EF      SBIW	R28,0x3F
     02649 97EF      SBIW	R28,0x3F
     0264A 97AC      SBIW	R28,0x2C
-(0139) //以64byte为一块 读取
-(0140) //index数据偏移量   data读出后存放地
-(0141) //////////////////////////////////////////////// 
-(0142) char ReadSDFile(unsigned int index,char *data)
-(0143) {
-(0144)  	unsigned int bw;
-(0145) 	char res;
-(0146) 	FATFS fs;
-(0147)     FIL file;
-(0148) 	char fnamep[13];
-(0149)     get_name(fnamep); 
-(0150)     disk_initialize(0);
-(0151)     res = f_mount(0, &fs);
-(0152)     res = f_open(&file,fnamep,FA_READ);  
+(0139) }
+(0140) /////////////////////////////////////////////////
+(0141) //       读取文件函数
+(0142) //以64byte为一块 读取
+(0143) //index数据偏移量   data读出后存放地
+(0144) //////////////////////////////////////////////// 
+(0145) char ReadSDFile(unsigned int index,char *data)
+(0146) {
+(0147)  	unsigned int bw;
+(0148) 	char res;
+(0149) 	FATFS fs;
+(0150)     FIL file;
+(0151) 	char fnamep[13];
+(0152)     get_name(fnamep); 
     0264B 018E      MOVW	R16,R28
     0264C 5D0A      SUBI	R16,0xDA
     0264D 4F1F      SBCI	R17,0xFF
     0264E D3DB      RCALL	_get_name
-(0153)     if(res==FR_NO_FILE) {data=NULL;
+(0153)     disk_initialize(0);
     0264F 2700      CLR	R16
     02650 940E 0282 CALL	_disk_initialize
-(0154)     #if _debug >= 1 
+(0154)     res = f_mount(0, &fs);
     02652 019E      MOVW	R18,R28
     02653 5C2B      SUBI	R18,0xCB
     02654 4F3F      SBCI	R19,0xFF
     02655 2700      CLR	R16
     02656 940E 166E CALL	_f_mount
-(0155)     debug_out("now file",255);
+(0155)     res = f_open(&file,fnamep,FA_READ);  
     02658 E081      LDI	R24,1
     02659 8388      ST	Y,R24
     0265A 019E      MOVW	R18,R28
@@ -12578,20 +12578,20 @@ _ReadSDFile:
     0265F 4F1F      SBCI	R17,0xFF
     02660 940E 1699 CALL	_f_open
     02662 2F40      MOV	R20,R16
-(0156) 	debug_out(filename,res);
+(0156)     if(res==FR_NO_FILE) {data=NULL;
     02663 3004      CPI	R16,4
     02664 F419      BNE	0x2668
     02665 24AA      CLR	R10
     02666 24BB      CLR	R11
-(0157) 	debug_out("file is no exist....",255);
-(0158)     #endif 
-(0159)     return res;
-(0160)     }   
-(0161)     res = f_lseek (&file,(index+2)*64);	 //前两个字节数据为文件头空间 所以从第三块读/写起
-(0162)     res = f_read(&file,data,64,&bw);
+(0157)     #if _debug >= 1 
+(0158)     debug_out("now file",255);
+(0159) 	debug_out(filename,res);
+(0160) 	debug_out("file is no exist....",255);
+(0161)     #endif 
+(0162)     return res;
     02667 C02E      RJMP	0x2696
-(0163)     f_close(&file);
-(0164) 	f_mount(0, NULL);
+(0163)     }   
+(0164)     res = f_lseek (&file,(index+2)*64);	 //前两个字节数据为文件头空间 所以从第三块读/写起
     02668 019B      MOVW	R18,R22
     02669 5F2E      SUBI	R18,0xFE
     0266A 4F3F      SBCI	R19,0xFF
@@ -12609,7 +12609,7 @@ _ReadSDFile:
     02677 4F1F      SBCI	R17,0xFF
     02678 940E 1E7A CALL	_f_lseek
     0267A 2EC0      MOV	R12,R16
-(0165) 	return res;
+(0165)     res = f_read(&file,data,64,&bw);
     0267B 01CE      MOVW	R24,R28
     0267C 96C3      ADIW	R24,0x33
     0267D 839B      STD	Y+3,R25
@@ -12625,17 +12625,17 @@ _ReadSDFile:
     02687 940E 1835 CALL	_f_read
     02689 2EA0      MOV	R10,R16
     0268A 2D4A      MOV	R20,R10
-(0166) } 
+(0166)     f_close(&file);
     0268B 018E      MOVW	R16,R28
     0268C 5F0C      SUBI	R16,0xFC
     0268D 4F1F      SBCI	R17,0xFF
     0268E 940E 1E6A CALL	_f_close
-(0167) //////////////////////////////////
+(0167) 	f_mount(0, NULL);
     02690 2722      CLR	R18
     02691 2733      CLR	R19
     02692 2700      CLR	R16
     02693 940E 166E CALL	_f_mount
-(0168) //   find index
+(0168) 	return res;
     02695 2F04      MOV	R16,R20
     02696 96EF      ADIW	R28,0x3F
     02697 96EF      ADIW	R28,0x3F
@@ -12675,48 +12675,48 @@ _findIndex:
     026AE 97EF      SBIW	R28,0x3F
     026AF 97EF      SBIW	R28,0x3F
     026B0 97A8      SBIW	R28,0x28
-(0169) // 检查当前文件尺寸，根据倒数第二个
-(0170) //'\n'及其后面的index确定当前index值
-(0171) //////////////////////////////////
-(0172) unsigned int findIndex(char *filename,char *buf){
-(0173)     unsigned int bw,tmp;
-(0174) 	long index =0;
-(0175) 	unsigned char is_first_end=0;
-(0176) 	char *fnamep=filename;
-(0177) 	FRESULT res;
+(0169) } 
+(0170) //////////////////////////////////
+(0171) //   find index
+(0172) // 检查当前文件尺寸，根据倒数第二个
+(0173) //'\n'及其后面的index确定当前index值
+(0174) //////////////////////////////////
+(0175) unsigned int findIndex(char *filename,char *buf){
+(0176)     unsigned int bw,tmp;
+(0177) 	long index =0;
     026B1 E080      LDI	R24,0
     026B2 838C      STD	Y+4,R24
     026B3 838D      STD	Y+5,R24
     026B4 838E      STD	Y+6,R24
     026B5 838F      STD	Y+7,R24
-(0178) 	FATFS fs;
+(0178) 	unsigned char is_first_end=0;
     026B6 2400      CLR	R0
     026B7 01DE      MOVW	R26,R28
     026B8 5AA2      SUBI	R26,0xA2
     026B9 4FBD      SBCI	R27,0xFD
     026BA 920C      ST	X,R0
-(0179) 	FIL file;
+(0179) 	char *fnamep=filename;
     026BB 0175      MOVW	R14,R10
-(0180) 	long lenth=0;
-(0181) 	int readsize=0;
-(0182) 	//PrintString_n(fnamep);
-(0183) 	res = f_mount(0, &fs);
+(0180) 	FRESULT res;
+(0181) 	FATFS fs;
+(0182) 	FIL file;
+(0183) 	long lenth=0;
     026BC E080      LDI	R24,0
     026BD 8788      STD	Y+8,R24
     026BE 8789      STD	Y+9,R24
     026BF 878A      STD	Y+10,R24
     026C0 878B      STD	Y+11,R24
-(0184) 	res = f_open(&file,fnamep, FA_OPEN_ALWAYS | FA_READ );  //创建一个新的文件
+(0184) 	int readsize=0;
     026C1 24AA      CLR	R10
     026C2 24BB      CLR	R11
-(0185) 	if(res !=  FR_OK){ //openerror
-(0186) 	    return res;}
+(0185) 	//PrintString_n(fnamep);
+(0186) 	res = f_mount(0, &fs);
     026C3 019E      MOVW	R18,R28
     026C4 5D20      SUBI	R18,0xD0
     026C5 4F3F      SBCI	R19,0xFF
     026C6 2700      CLR	R16
     026C7 940E 166E CALL	_f_mount
-(0187) 	lenth=file.fsize;   //文件尾部为 file.size 
+(0187) 	res = f_open(&file,fnamep, FA_OPEN_ALWAYS | FA_READ );  //创建一个新的文件
     026C9 E181      LDI	R24,0x11
     026CA 8388      ST	Y,R24
     026CB 0197      MOVW	R18,R14
@@ -12725,13 +12725,13 @@ _findIndex:
     026CE 4F1F      SBCI	R17,0xFF
     026CF 940E 1699 CALL	_f_open
     026D1 2EC0      MOV	R12,R16
-(0188) 	//debug("size=",0xff);
+(0188) 	if(res !=  FR_OK){ //openerror
     026D2 2300      TST	R16
     026D3 F011      BEQ	0x26D6
-(0189) 	//PrintLong(lenth);
+(0189) 	    return res;}
     026D4 2711      CLR	R17
     026D5 C11E      RJMP	0x27F4
-(0190) 	if(lenth > 512) {
+(0190) 	lenth=file.fsize;   //文件尾部为 file.size 
     026D6 882E      LDD	R2,Y+22
     026D7 883F      LDD	R3,Y+23
     026D8 8C48      LDD	R4,Y+24
@@ -12740,9 +12740,9 @@ _findIndex:
     026DB 8639      STD	Y+9,R3
     026DC 864A      STD	Y+10,R4
     026DD 865B      STD	Y+11,R5
-(0191) 	    readsize=512;
-(0192) 		lenth=file.fsize;
-(0193) 	}
+(0191) 	//debug("size=",0xff);
+(0192) 	//PrintLong(lenth);
+(0193) 	if(lenth > 512) {
     026DE E040      LDI	R20,0
     026DF E052      LDI	R21,2
     026E0 E060      LDI	R22,0
@@ -12756,11 +12756,11 @@ _findIndex:
     026E8 0564      CPC	R22,R4
     026E9 0575      CPC	R23,R5
     026EA F464      BGE	0x26F7
-(0194) 	else {
+(0194) 	    readsize=512;
     026EB E080      LDI	R24,0
     026EC E092      LDI	R25,2
     026ED 015C      MOVW	R10,R24
-(0195) 	    readsize =file.fsize;
+(0195) 		lenth=file.fsize;
     026EE 882E      LDD	R2,Y+22
     026EF 883F      LDD	R3,Y+23
     026F0 8C48      LDD	R4,Y+24
@@ -12769,20 +12769,20 @@ _findIndex:
     026F3 8639      STD	Y+9,R3
     026F4 864A      STD	Y+10,R4
     026F5 865B      STD	Y+11,R5
-(0196) 		lenth=0;
+(0196) 	}
     026F6 C007      RJMP	0x26FE
-(0197) 	}
-(0198) 	res = f_lseek (&file,file.fsize-readsize);
+(0197) 	else {
+(0198) 	    readsize =file.fsize;
     026F7 88AE      LDD	R10,Y+22
     026F8 88BF      LDD	R11,Y+23
-(0199) 	//debug("readSIZE=",0x00);
+(0199) 		lenth=0;
     026F9 E080      LDI	R24,0
     026FA 8788      STD	Y+8,R24
     026FB 8789      STD	Y+9,R24
     026FC 878A      STD	Y+10,R24
     026FD 878B      STD	Y+11,R24
-(0200) 	//PrintLong((file.fsize-readsize));
-(0201) 	res = f_read(&file,buf,readsize,&bw);
+(0200) 	}
+(0201) 	res = f_lseek (&file,file.fsize-readsize);
     026FE 0115      MOVW	R2,R10
     026FF 2444      CLR	R4
     02700 FC37      SBRC	R3,7
@@ -12805,9 +12805,9 @@ _findIndex:
     02711 5F04      SUBI	R16,0xF4
     02712 4F1F      SBCI	R17,0xFF
     02713 940E 1E7A CALL	_f_lseek
-(0202) 	f_close(&file);
-(0203) 	//debug("readRES=",res);
-(0204) 	//debug("readbw=",0X00);
+(0202) 	//debug("readSIZE=",0x00);
+(0203) 	//PrintLong((file.fsize-readsize));
+(0204) 	res = f_read(&file,buf,readsize,&bw);
     02715 01CE      MOVW	R24,R28
     02716 968E      ADIW	R24,0x2E
     02717 839B      STD	Y+3,R25
@@ -12825,20 +12825,20 @@ _findIndex:
     02723 940E 1835 CALL	_f_read
     02725 2EE0      MOV	R14,R16
     02726 2CCE      MOV	R12,R14
-(0205) 	//PrintLong(bw);
+(0205) 	f_close(&file);
     02727 018E      MOVW	R16,R28
     02728 5F04      SUBI	R16,0xF4
     02729 4F1F      SBCI	R17,0xFF
     0272A 940E 1E6A CALL	_f_close
-(0206) 	//PrintString_n(buf);
-(0207) 	for(tmp=readsize;tmp>0;tmp--){
-(0208) 		//debug("buf index",buf[tmp]);
-(0209) 		//PrintLong(tmp);
-(0210) 		if(buf[tmp] == '\n') Usart_Transmit('@');						  
+(0206) 	//debug("readRES=",res);
+(0207) 	//debug("readbw=",0X00);
+(0208) 	//PrintLong(bw);
+(0209) 	//PrintString_n(buf);
+(0210) 	for(tmp=readsize;tmp>0;tmp--){
     0272C C04E      RJMP	0x277B
-(0211) 		if(buf[tmp] == '\n' && is_first_end== 0){
-(0212) 		    is_first_end=1; 	
-(0213) 			//debug("first=",0xf0);					      
+(0211) 		//debug("buf index",buf[tmp]);
+(0212) 		//PrintLong(tmp);
+(0213) 		if(buf[tmp] == '\n') Usart_Transmit('@');						  
     0272D 01F5      MOVW	R30,R10
     0272E 01DE      MOVW	R26,R28
     0272F 59A7      SUBI	R26,0x97
@@ -12852,7 +12852,7 @@ _findIndex:
     02737 F419      BNE	0x273B
     02738 E400      LDI	R16,0x40
     02739 940E 35CC CALL	_Usart_Transmit
-(0214) 		}
+(0214) 		if(buf[tmp] == '\n' && is_first_end== 0){
     0273B 01F5      MOVW	R30,R10
     0273C 01DE      MOVW	R26,R28
     0273D 59A7      SUBI	R26,0x97
@@ -12870,17 +12870,17 @@ _findIndex:
     02749 8000      LD	R0,Z
     0274A 2000      TST	R0
     0274B F439      BNE	0x2753
-(0215) 		else if(buf[tmp] == '\n' && is_first_end== 1){
+(0215) 		    is_first_end=1; 	
     0274C 2400      CLR	R0
     0274D 9403      INC	R0
     0274E 01FE      MOVW	R30,R28
     0274F 5AE2      SUBI	R30,0xA2
     02750 4FFD      SBCI	R31,0xFD
     02751 8200      ST	Z,R0
-(0216) 		    lenth -= (512-tmp);
-(0217) 			break;
+(0216) 			//debug("first=",0xf0);					      
+(0217) 		}
     02752 C025      RJMP	0x2778
-(0218) 		} 						
+(0218) 		else if(buf[tmp] == '\n' && is_first_end== 1){
     02753 01F5      MOVW	R30,R10
     02754 01DE      MOVW	R26,R28
     02755 59A7      SUBI	R26,0x97
@@ -12898,7 +12898,7 @@ _findIndex:
     02761 918C      LD	R24,X
     02762 3081      CPI	R24,1
     02763 F4A1      BNE	0x2778
-(0219) 	}
+(0219) 		    lenth -= (512-tmp);
     02764 E080      LDI	R24,0
     02765 E092      LDI	R25,2
     02766 011C      MOVW	R2,R24
@@ -12918,7 +12918,7 @@ _findIndex:
     02774 8679      STD	Y+9,R7
     02775 868A      STD	Y+10,R8
     02776 869B      STD	Y+11,R9
-(0220) 	//debug("start=",0X00); PrintLong(lenth);
+(0220) 			break;
     02777 C009      RJMP	0x2781
     02778 01C5      MOVW	R24,R10
     02779 9701      SBIW	R24,1
@@ -12929,10 +12929,10 @@ _findIndex:
     0277E 20BB      TST	R11
     0277F F009      BEQ	0x2781
     02780 CFAC      RJMP	0x272D
-(0221) 	if(lenth < 118 ){ 
-(0222)  		return 1;
-(0223) 	}
-(0224) 	else {
+(0221) 		} 						
+(0222) 	}
+(0223) 	//debug("start=",0X00); PrintLong(lenth);
+(0224) 	if(lenth < 118 ){ 
     02781 E746      LDI	R20,0x76
     02782 E050      LDI	R21,0
     02783 E060      LDI	R22,0
@@ -12946,14 +12946,14 @@ _findIndex:
     0278B 0646      CPC	R4,R22
     0278C 0657      CPC	R5,R23
     0278D F434      BGE	0x2794
-(0225) 		 //debug(">128 ",0X00);
+(0225)  		return 1;
     0278E E001      LDI	R16,1
     0278F E010      LDI	R17,0
     02790 C063      RJMP	0x27F4
-(0226) 		 while(buf[tmp] <= '0' || buf[tmp] >= '9') tmp++;
-(0227) 		 //debug("nozero ",bw); PrintLong(tmp);
-(0228) 		 while(buf[tmp] != 't' && buf[tmp] >= '0' && buf[tmp] <= '9'){
-(0229) 		     index=index*10+(buf[tmp]-'0');
+(0226) 	}
+(0227) 	else {
+(0228) 		 //debug(">128 ",0X00);
+(0229) 		 while(buf[tmp] <= '0' || buf[tmp] >= '9') tmp++;
     02791 01C5      MOVW	R24,R10
     02792 9601      ADIW	R24,1
     02793 015C      MOVW	R10,R24
@@ -12974,9 +12974,9 @@ _findIndex:
     027A2 3389      CPI	R24,0x39
     027A3 F768      BCC	0x2791
     027A4 C02F      RJMP	0x27D4
-(0230) 		 	 //Usart_Transmit(buf[tmp]);	
-(0231) 		 	 tmp++;
-(0232) 		 }
+(0230) 		 //debug("nozero ",bw); PrintLong(tmp);
+(0231) 		 while(buf[tmp] != 't' && buf[tmp] >= '0' && buf[tmp] <= '9'){
+(0232) 		     index=index*10+(buf[tmp]-'0');
     027A5 01F5      MOVW	R30,R10
     027A6 01DE      MOVW	R26,R28
     027A7 59A7      SUBI	R26,0x97
@@ -13020,8 +13020,8 @@ _findIndex:
     027CE 827D      STD	Y+5,R7
     027CF 828E      STD	Y+6,R8
     027D0 829F      STD	Y+7,R9
-(0233) 	}
-(0234) 	//debug("index=",0X00);
+(0233) 		 	 //Usart_Transmit(buf[tmp]);	
+(0234) 		 	 tmp++;
     027D1 01C5      MOVW	R24,R10
     027D2 9601      ADIW	R24,1
     027D3 015C      MOVW	R10,R24
@@ -13044,11 +13044,11 @@ _findIndex:
     027E4 158E      CP	R24,R14
     027E5 F008      BCS	0x27E7
     027E6 CFBE      RJMP	0x27A5
-(0235) 	//PrintLong(index+1);
-(0236) 	return index+1;
-(0237) }
-(0238) void check( void )
-(0239) {
+(0235) 		 }
+(0236) 	}
+(0237) 	//debug("index=",0X00);
+(0238) 	//PrintLong(index+1);
+(0239) 	return index+1;
     027E7 E041      LDI	R20,1
     027E8 E050      LDI	R21,0
     027E9 E060      LDI	R22,0
@@ -13080,18 +13080,18 @@ _check:
   tmp                  --> R12
     02802 940E 3F73 CALL	push_xgset003C
     02804 9722      SBIW	R28,2
-(0240)  unsigned char tmp;
-(0241)  unsigned int WScounter;
-(0242)  //检测风速
-(0243)  //读计数器1 此步需严格按手册进行。
-(0244)  tmp=SREG;
-(0245)  CLI();
-(0246)  WScounter=TCNT1H*256+TCNT1L;
-(0247)  SREG=tmp;
+(0240) }
+(0241) void check( void )
+(0242) {
+(0243)  unsigned char tmp;
+(0244)  unsigned int WScounter;
+(0245)  //检测风速
+(0246)  //读计数器1 此步需严格按手册进行。
+(0247)  tmp=SREG;
     02805 B6CF      IN	R12,0x3F
-(0248)  SEI();
+(0248)  CLI();
     02806 94F8      BCLR	7
-(0249)  //计算风速
+(0249)  WScounter=TCNT1H*256+TCNT1L;
     02807 B52D      IN	R18,0x2D
     02808 2733      CLR	R19
     02809 E000      LDI	R16,0
@@ -13102,12 +13102,12 @@ _check:
     0280F 2433      CLR	R3
     02810 0CA2      ADD	R10,R2
     02811 1CB3      ADC	R11,R3
-(0250)  Result.WindSpeed=WScounter/N_per_Second;
+(0250)  SREG=tmp;
     02812 BECF      OUT	0x3F,R12
-(0251)  //温度
+(0251)  SEI();
     02813 9478      BSET	7
-(0252)  Result.Temperature=read_T_NUM(1);
-(0253)  //WCI风冷指数
+(0252)  //计算风速
+(0253)  Result.WindSpeed=WScounter/N_per_Second;
     02814 0185      MOVW	R16,R10
     02815 940E 40C7 CALL	uint2fp
     02817 0118      MOVW	R2,R16
@@ -13126,16 +13126,16 @@ _check:
     02827 9300 0575 STS	Result+51,R16
     02829 9330 0578 STS	Result+54,R19
     0282B 9320 0577 STS	Result+53,R18
-(0254)   Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
-(0255)  //ECT等价制冷温度
+(0254)  //温度
+(0255)  Result.Temperature=read_T_NUM(1);
     0282D E001      LDI	R16,1
     0282E 940E 3D08 CALL	_read_T_NUM
     02830 9310 056C STS	Result+42,R17
     02832 9300 056B STS	Result+41,R16
     02834 9330 056E STS	Result+44,R19
     02836 9320 056D STS	Result+43,R18
-(0256)  Result.ECT = 33 - 0.01085 * Result.WCI;
-(0257)  //TEQ 相当温度
+(0256)  //WCI风冷指数
+(0257)   Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
     02838 9120 0577 LDS	R18,Result+53
     0283A 9130 0578 LDS	R19,Result+54
     0283C 9100 0575 LDS	R16,Result+51
@@ -13193,8 +13193,8 @@ _check:
     0287D 9300 057E STS	Result+60,R16
     0287F 9330 0581 STS	Result+63,R19
     02881 9320 0580 STS	Result+62,R18
-(0258)  Result.Teq = Result.Temperature +( (Result.Temperature -36)/10 ) * Result.WindSpeed ;
-(0259) //将数据转换成字符串
+(0258)  //ECT等价制冷温度
+(0259)  Result.ECT = 33 - 0.01085 * Result.WCI;
     02883 E90C      LDI	R16,0x9C
     02884 E010      LDI	R17,0
     02885 940E 3EF5 CALL	elpm32
@@ -13215,8 +13215,8 @@ _check:
     02899 9300 0588 STS	Result+70,R16
     0289B 9330 058B STS	Result+73,R19
     0289D 9320 058A STS	Result+72,R18
-(0260)  
-(0261) ftochr(Result.WindSpeed,Result.WSChar);
+(0260)  //TEQ 相当温度
+(0261)  Result.Teq = Result.Temperature +( (Result.Temperature -36)/10 ) * Result.WindSpeed ;
     0289F 9040 056D LDS	R4,Result+43
     028A1 9050 056E LDS	R5,Result+44
     028A3 9020 056B LDS	R2,Result+41
@@ -13257,9 +13257,9 @@ _check:
     028CF 9300 0592 STS	Result+80,R16
     028D1 9330 0595 STS	Result+83,R19
     028D3 9320 0594 STS	Result+82,R18
-(0262) ftochr(Result.Temperature,Result.TempChar);
-(0263) ftochr(Result.WCI,Result.WCIChar);
-(0264) ftochr(Result.ECT,Result.ECTChar);
+(0262) //将数据转换成字符串
+(0263)  
+(0264) ftochr(Result.WindSpeed,Result.WSChar);
     028D5 E789      LDI	R24,0x79
     028D6 E095      LDI	R25,5
     028D7 8399      STD	Y+1,R25
@@ -13269,7 +13269,7 @@ _check:
     028DD 9100 0575 LDS	R16,Result+51
     028DF 9110 0576 LDS	R17,Result+52
     028E1 D04E      RCALL	_ftochr
-(0265) ftochr(Result.Teq,Result.TeqChar);
+(0265) ftochr(Result.Temperature,Result.TempChar);
     028E2 E68F      LDI	R24,0x6F
     028E3 E095      LDI	R25,5
     028E4 8399      STD	Y+1,R25
@@ -13279,7 +13279,7 @@ _check:
     028EA 9100 056B LDS	R16,Result+41
     028EC 9110 056C LDS	R17,Result+42
     028EE D041      RCALL	_ftochr
-(0266) itoa(Result.IndexChar,Result.Index,10);
+(0266) ftochr(Result.WCI,Result.WCIChar);
     028EF E882      LDI	R24,0x82
     028F0 E095      LDI	R25,5
     028F1 8399      STD	Y+1,R25
@@ -13289,7 +13289,7 @@ _check:
     028F7 9100 057E LDS	R16,Result+60
     028F9 9110 057F LDS	R17,Result+61
     028FB D034      RCALL	_ftochr
-(0267) Result.TempChar[6]='\0';
+(0267) ftochr(Result.ECT,Result.ECTChar);
     028FC E88C      LDI	R24,0x8C
     028FD E095      LDI	R25,5
     028FE 8399      STD	Y+1,R25
@@ -13299,7 +13299,7 @@ _check:
     02904 9100 0588 LDS	R16,Result+70
     02906 9110 0589 LDS	R17,Result+71
     02908 D027      RCALL	_ftochr
-(0268) Result.WSChar[5]='\0';
+(0268) ftochr(Result.Teq,Result.TeqChar);
     02909 E986      LDI	R24,0x96
     0290A E095      LDI	R25,5
     0290B 8399      STD	Y+1,R25
@@ -13309,7 +13309,7 @@ _check:
     02911 9100 0592 LDS	R16,Result+80
     02913 9110 0593 LDS	R17,Result+81
     02915 D01A      RCALL	_ftochr
-(0269) Result.WCIChar[6]='\0';
+(0269) itoa(Result.IndexChar,Result.Index,10);
     02916 E08A      LDI	R24,0xA
     02917 E090      LDI	R25,0
     02918 8399      STD	Y+1,R25
@@ -13319,18 +13319,18 @@ _check:
     0291E E500      LDI	R16,0x50
     0291F E015      LDI	R17,5
     02920 940E 429F CALL	_itoa
-(0270) Result.ECTChar[6]='\0';
+(0270) Result.TempChar[6]='\0';
     02922 2422      CLR	R2
     02923 9220 0575 STS	Result+51,R2
-(0271) Result.TeqChar[6]='\0';
+(0271) Result.WSChar[5]='\0';
     02925 9220 057E STS	Result+60,R2
-(0272)  return ;
+(0272) Result.WCIChar[6]='\0';
     02927 9220 0588 STS	Result+70,R2
-(0273) }
+(0273) Result.ECTChar[6]='\0';
     02929 9220 0592 STS	Result+80,R2
-(0274) ////////////////////////////////////////////
+(0274) Result.TeqChar[6]='\0';
     0292B 9220 059C STS	Result+90,R2
-(0275) //				字符串转换函数
+(0275)  return ;
     0292D 9622      ADIW	R28,2
     0292E 940C 3F4D JMP	pop_xgset003C
 _ftochr:
@@ -13346,16 +13346,16 @@ _ftochr:
     02934 9724      SBIW	R28,4
     02935 88E8      LDD	R14,Y+16
     02936 88F9      LDD	R15,Y+17
-(0276) //   浮点 到  字符串
+(0276) }
 (0277) ////////////////////////////////////////////
-(0278) void ftochr(float a,char * dest){//float
-(0279) char i=0,j=0,lenth;
-(0280) int status;
-(0281) char *res;
-(0282)  res=ftoa(a,&status);  //float to ascii
-(0283) lenth=strlen(res);
-(0284) 
-(0285) for(i=0;i <lenth;i++) 
+(0278) //				字符串转换函数
+(0279) //   浮点 到  字符串
+(0280) ////////////////////////////////////////////
+(0281) void ftochr(float a,char * dest){//float
+(0282) char i=0,j=0,lenth;
+(0283) int status;
+(0284) char *res;
+(0285)  res=ftoa(a,&status);  //float to ascii
     02937 01CE      MOVW	R24,R28
     02938 9602      ADIW	R24,2
     02939 8399      STD	Y+1,R25
@@ -13366,15 +13366,15 @@ _ftochr:
     0293E 853F      LDD	R19,Y+15
     0293F 940E 43C2 CALL	_ftoa
     02941 0168      MOVW	R12,R16
-(0286)        {
+(0286) lenth=strlen(res);
     02942 940E 3E1C CALL	_strlen
     02944 2F40      MOV	R20,R16
-(0287) 	   	dest[i]=res[i];
-(0288) 
+(0287) 
+(0288) for(i=0;i <lenth;i++) 
     02945 24AA      CLR	R10
     02946 C023      RJMP	0x296A
-(0289) 		if( res[i]=='.'  ) 
-(0290) 			{
+(0289)        {
+(0290) 	   	dest[i]=res[i];
     02947 2DEA      MOV	R30,R10
     02948 27FF      CLR	R31
     02949 0DEC      ADD	R30,R12
@@ -13385,8 +13385,8 @@ _ftochr:
     0294E 0DEE      ADD	R30,R14
     0294F 1DFF      ADC	R31,R15
     02950 8220      ST	Z,R2
-(0291) 				dest[i+1]=res[i+1];
-(0292) 					dest[i+2]='\0';
+(0291) 
+(0292) 		if( res[i]=='.'  ) 
     02951 2DEA      MOV	R30,R10
     02952 27FF      CLR	R31
     02953 0DEC      ADD	R30,R12
@@ -13394,8 +13394,8 @@ _ftochr:
     02955 8180      LD	R24,Z
     02956 328E      CPI	R24,0x2E
     02957 F489      BNE	0x2969
-(0293) 						return ;    
-(0294) 		    }
+(0293) 			{
+(0294) 				dest[i+1]=res[i+1];
     02958 2DEA      MOV	R30,R10
     02959 27FF      CLR	R31
     0295A 0DEC      ADD	R30,R12
@@ -13406,14 +13406,14 @@ _ftochr:
     0295F 0DEE      ADD	R30,R14
     02960 1DFF      ADC	R31,R15
     02961 8221      STD	Z+1,R2
-(0295)  
+(0295) 					dest[i+2]='\0';
     02962 2DEA      MOV	R30,R10
     02963 27FF      CLR	R31
     02964 0DEE      ADD	R30,R14
     02965 1DFF      ADC	R31,R15
     02966 2422      CLR	R2
     02967 8222      STD	Z+2,R2
-(0296)  		}
+(0296) 						return ;    
     02968 C003      RJMP	0x296C
     02969 94A3      INC	R10
     0296A 16A4      CP	R10,R20
@@ -13429,16 +13429,16 @@ _itochr:
     02973 0159      MOVW	R10,R18
     02974 0168      MOVW	R12,R16
     02975 9722      SBIW	R28,2
-(0297) }
-(0298) //////////////////////////////////////////////////////
-(0299) //              整型数据变字符串
-(0300) //    a  到  dest
-(0301) ///////////////////////////////////////////////////////
-(0302) void itochr(int a,char * dest){ //int to ascii
-(0303) 	 itoa(dest,a,10); 
-(0304) }
-(0305) //////////////////////////////////////////////////////
-(0306) //                  结构体 变字符串
+(0297) 		    }
+(0298)  
+(0299)  		}
+(0300) }
+(0301) //////////////////////////////////////////////////////
+(0302) //              整型数据变字符串
+(0303) //    a  到  dest
+(0304) ///////////////////////////////////////////////////////
+(0305) void itochr(int a,char * dest){ //int to ascii
+(0306) 	 itoa(dest,a,10); 
     02976 E08A      LDI	R24,0xA
     02977 E090      LDI	R25,0
     02978 8399      STD	Y+1,R25
@@ -13454,15 +13454,15 @@ _StructToChar:
   i                    --> R10
     02981 92AA      ST	-Y,R10
     02982 9768      SBIW	R28,0x18
-(0307) // 将目前存于结构体的数据转换到Temp_Char中。
-(0308) ///////////////////////////////////////////////////////
-(0309) void  StructToChar(void)
-(0310) { 
-(0311)   unsigned char i;
-(0312)   char otherbyte[]="0\t0\t0\t0";
-(0313)   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
-(0314)  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
-(0315) 				Result.TeqChar
+(0307) }
+(0308) //////////////////////////////////////////////////////
+(0309) //                  结构体 变字符串
+(0310) // 将目前存于结构体的数据转换到Temp_Char中。
+(0311) ///////////////////////////////////////////////////////
+(0312) void  StructToChar(void)
+(0313) { 
+(0314)   unsigned char i;
+(0315)   char otherbyte[]="0\t0\t0\t0";
     02983 EB80      LDI	R24,0xB0
     02984 E091      LDI	R25,1
     02985 01FE      MOVW	R30,R28
@@ -13474,7 +13474,7 @@ _StructToChar:
     0298B 939A      ST	-Y,R25
     0298C 938A      ST	-Y,R24
     0298D 940E 4014 CALL	asgnblk
-(0316) 			   };  //指向数组首地址的指针
+(0316)   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
     0298F EB88      LDI	R24,0xB8
     02990 E091      LDI	R25,1
     02991 01FE      MOVW	R30,R28
@@ -13485,11 +13485,11 @@ _StructToChar:
     02996 939A      ST	-Y,R25
     02997 938A      ST	-Y,R24
     02998 940E 4014 CALL	asgnblk
-(0317)   //strcat(Temp_Char,Result.Name);
-(0318)   for(i=0;i<=80;i++) TempChar[i]='\0';  //清空数组
-(0319)     for(i=0;i<=7;i++){
-(0320) 		strcat(TempChar,ary[i]);  // 按顺序复制字符串
-(0321) 		strcat(TempChar,tab);     // 字串结尾加上制表符
+(0317)  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
+(0318) 				Result.TeqChar
+(0319) 			   };  //指向数组首地址的指针
+(0320)   //strcat(Temp_Char,Result.Name);
+(0321)   for(i=0;i<=80;i++) TempChar[i]='\0';  //清空数组
     0299A 24AA      CLR	R10
     0299B C009      RJMP	0x29A5
     0299C EF82      LDI	R24,0xF2
@@ -13504,10 +13504,10 @@ _StructToChar:
     029A5 E580      LDI	R24,0x50
     029A6 158A      CP	R24,R10
     029A7 F7A0      BCC	0x299C
-(0322)     }
+(0322)     for(i=0;i<=7;i++){
     029A8 24AA      CLR	R10
     029A9 C014      RJMP	0x29BE
-(0323) 				 
+(0323) 		strcat(TempChar,ary[i]);  // 按顺序复制字符串
     029AA 01CE      MOVW	R24,R28
     029AB 2DEA      MOV	R30,R10
     029AC 27FF      CLR	R31
@@ -13520,7 +13520,7 @@ _StructToChar:
     029B3 EF02      LDI	R16,0xF2
     029B4 E014      LDI	R17,4
     029B5 940E 3E0F CALL	_strcat
-(0324) 				 otherbyte[0]=otherbyte[0]+Result.WeiHai;
+(0324) 		strcat(TempChar,tab);     // 字串结尾加上制表符
     029B7 E02F      LDI	R18,0xF
     029B8 E031      LDI	R19,1
     029B9 EF02      LDI	R16,0xF2
@@ -13530,42 +13530,42 @@ _StructToChar:
     029BE E087      LDI	R24,7
     029BF 158A      CP	R24,R10
     029C0 F748      BCC	0x29AA
-(0325) 				 otherbyte[2]=otherbyte[0]+Result.LowLabor;
-(0326) 				 otherbyte[4]=otherbyte[0]+Result.MidLabor;
-(0327) 				 otherbyte[6]=otherbyte[0]+Result.HighLabor;
+(0325)     }
+(0326) 				 
+(0327) 				 otherbyte[0]=otherbyte[0]+Result.WeiHai;
     029C1 9020 059C LDS	R2,Result+90
     029C3 8838      LDD	R3,Y+16
     029C4 0C32      ADD	R3,R2
     029C5 8A38      STD	Y+16,R3
-(0328)  
+(0328) 				 otherbyte[2]=otherbyte[0]+Result.LowLabor;
     029C6 9020 059D LDS	R2,Result+91
     029C8 0C32      ADD	R3,R2
     029C9 8A3A      STD	Y+18,R3
-(0329)   strcat(TempChar,otherbyte);  
+(0329) 				 otherbyte[4]=otherbyte[0]+Result.MidLabor;
     029CA 9020 059E LDS	R2,Result+92
     029CC 8838      LDD	R3,Y+16
     029CD 0C32      ADD	R3,R2
     029CE 8A3C      STD	Y+20,R3
-(0330)   strcat(TempChar,enter);  
+(0330) 				 otherbyte[6]=otherbyte[0]+Result.HighLabor;
     029CF 9020 059F LDS	R2,Result+93
     029D1 8838      LDD	R3,Y+16
     029D2 0C32      ADD	R3,R2
     029D3 8A3E      STD	Y+22,R3
-(0331)   strcat(TempChar,"\0\0");
-(0332) }
+(0331)  
+(0332)   strcat(TempChar,otherbyte);  
     029D4 019E      MOVW	R18,R28
     029D5 5F20      SUBI	R18,0xF0
     029D6 4F3F      SBCI	R19,0xFF
     029D7 EF02      LDI	R16,0xF2
     029D8 E014      LDI	R17,4
     029D9 940E 3E0F CALL	_strcat
-(0333) 
+(0333)   strcat(TempChar,enter);  
     029DB E122      LDI	R18,0x12
     029DC E031      LDI	R19,1
     029DD EF02      LDI	R16,0xF2
     029DE E014      LDI	R17,4
     029DF 940E 3E0F CALL	_strcat
-(0334) //////////////////////////////////////////////////////
+(0334)   strcat(TempChar,"\0\0");
     029E1 ED2F      LDI	R18,0xDF
     029E2 E031      LDI	R19,1
     029E3 EF02      LDI	R16,0xF2
@@ -13584,19 +13584,19 @@ _CharToStruct:
     029EA 940E 3F6F CALL	push_xgset30FC
     029EC 97EF      SBIW	R28,0x3F
     029ED 97A1      SBIW	R28,0x21
-(0335) //               字符串  变  结构体
-(0336) // 
-(0337) ///////////////////////////////////////////////////////
-(0338) void CharToStruct(void)
-(0339) {
-(0340)   unsigned char i=0,j=0;
-(0341)   unsigned char *p,*q;
-(0342)   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
-(0343)  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
+(0335) }
+(0336) 
+(0337) //////////////////////////////////////////////////////
+(0338) //               字符串  变  结构体
+(0339) // 
+(0340) ///////////////////////////////////////////////////////
+(0341) void CharToStruct(void)
+(0342) {
+(0343)   unsigned char i=0,j=0;
     029EE 2744      CLR	R20
     029EF 24EE      CLR	R14
-(0344) 				Result.TeqChar
-(0345) 			   };  //指向数组首地址的指针
+(0344)   unsigned char *p,*q;
+(0345)   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
     029F0 EC88      LDI	R24,0xC8
     029F1 E091      LDI	R25,1
     029F2 01FE      MOVW	R30,R28
@@ -13607,11 +13607,11 @@ _CharToStruct:
     029F7 939A      ST	-Y,R25
     029F8 938A      ST	-Y,R24
     029F9 940E 4014 CALL	asgnblk
-(0346)   char Temp_Char[80];
-(0347)     p=ary[j];
-(0348) 	q=Temp_Char;
-(0349) 	while(1){
-(0350)     if(*q =='\n') {*p='\0'; return;} ;
+(0346)  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
+(0347) 				Result.TeqChar
+(0348) 			   };  //指向数组首地址的指针
+(0349)   char Temp_Char[80];
+(0350)     p=ary[j];
     029FB 01CE      MOVW	R24,R28
     029FC 2DEE      MOV	R30,R14
     029FD 27FF      CLR	R31
@@ -13621,13 +13621,13 @@ _CharToStruct:
     02A01 1FF9      ADC	R31,R25
     02A02 80A0      LD	R10,Z
     02A03 80B1      LDD	R11,Z+1
-(0351) 	if(*q =='\t') {j++;p=ary[j];i=0;}
+(0351) 	q=Temp_Char;
     02A04 01CE      MOVW	R24,R28
     02A05 9640      ADIW	R24,0x10
     02A06 016C      MOVW	R12,R24
     02A07 C01D      RJMP	0x2A25
-(0352)     *p++=*q++;
-(0353) 	}
+(0352) 	while(1){
+(0353)     if(*q =='\n') {*p='\0'; return;} ;
     02A08 01F6      MOVW	R30,R12
     02A09 8180      LD	R24,Z
     02A0A 308A      CPI	R24,0xA
@@ -13636,7 +13636,7 @@ _CharToStruct:
     02A0D 01F5      MOVW	R30,R10
     02A0E 8220      ST	Z,R2
     02A0F C016      RJMP	0x2A26
-(0354)   }
+(0354) 	if(*q =='\t') {j++;p=ary[j];i=0;}
     02A10 01F6      MOVW	R30,R12
     02A11 8180      LD	R24,Z
     02A12 3089      CPI	R24,0x9
@@ -13652,7 +13652,7 @@ _CharToStruct:
     02A1C 80A0      LD	R10,Z
     02A1D 80B1      LDD	R11,Z+1
     02A1E 2744      CLR	R20
-(0355)  
+(0355)     *p++=*q++;
     02A1F 01F6      MOVW	R30,R12
     02A20 01D5      MOVW	R26,R10
     02A21 9001      LD	R0,Z+
@@ -13667,19 +13667,19 @@ _get_name:
   i                    --> R20
   filenamep            --> R16
     02A2A 940E 3F82 CALL	push_xgsetF000
-(0356)  ////////////////////////////////////////////
-(0357) //				根据当前日期获取文件名
-(0358) //   
-(0359) ////////////////////////////////////////////
-(0360) char *get_name( char filenamep[] ){     
-(0361) 	  unsigned char i=0;
-(0362)  	  for(i=0;i<6;i++) {
-(0363) 	  				    *(filenamep+i)=Result.Date[i];
-(0364) 	  				   } 
-(0365) 	 	*(filenamep+(i++))='.';
+(0356) 	}
+(0357)   }
+(0358)  
+(0359)  ////////////////////////////////////////////
+(0360) //				根据当前日期获取文件名
+(0361) //   
+(0362) ////////////////////////////////////////////
+(0363) char *get_name( char filenamep[] ){     
+(0364) 	  unsigned char i=0;
+(0365)  	  for(i=0;i<6;i++) {
     02A2C 2744      CLR	R20
     02A2D C00D      RJMP	0x2A3B
-(0366) 		*(filenamep+(i++))='x';
+(0366) 	  				    *(filenamep+i)=Result.Date[i];
     02A2E E588      LDI	R24,0x58
     02A2F E095      LDI	R25,5
     02A30 2FE4      MOV	R30,R20
@@ -13695,8 +13695,8 @@ _get_name:
     02A3A 9543      INC	R20
     02A3B 3046      CPI	R20,6
     02A3C F388      BCS	0x2A2E
-(0367) 		*(filenamep+(i++))='l';
-(0368) 		*(filenamep+(i++))='s';
+(0367) 	  				   } 
+(0368) 	 	*(filenamep+(i++))='.';
     02A3D 2E24      MOV	R2,R20
     02A3E 2433      CLR	R3
     02A3F 5F4F      SUBI	R20,0xFF
@@ -13706,7 +13706,7 @@ _get_name:
     02A43 1FF1      ADC	R31,R17
     02A44 E28E      LDI	R24,0x2E
     02A45 8380      ST	Z,R24
-(0369) 		*(filenamep+(i))='\0';
+(0369) 		*(filenamep+(i++))='x';
     02A46 2E24      MOV	R2,R20
     02A47 2433      CLR	R3
     02A48 5F4F      SUBI	R20,0xFF
@@ -13716,7 +13716,7 @@ _get_name:
     02A4C 1FF1      ADC	R31,R17
     02A4D E788      LDI	R24,0x78
     02A4E 8380      ST	Z,R24
-(0370) 					   
+(0370) 		*(filenamep+(i++))='l';
     02A4F 2F64      MOV	R22,R20
     02A50 2777      CLR	R23
     02A51 5F4F      SUBI	R20,0xFF
@@ -13726,7 +13726,7 @@ _get_name:
     02A55 1FF1      ADC	R31,R17
     02A56 E68C      LDI	R24,0x6C
     02A57 8380      ST	Z,R24
-(0371)       return filenamep;
+(0371) 		*(filenamep+(i++))='s';
     02A58 2F64      MOV	R22,R20
     02A59 2777      CLR	R23
     02A5A 5F4F      SUBI	R20,0xFF
@@ -13736,15 +13736,15 @@ _get_name:
     02A5E 1FF1      ADC	R31,R17
     02A5F E783      LDI	R24,0x73
     02A60 8380      ST	Z,R24
-(0372) } 
+(0372) 		*(filenamep+(i))='\0';
     02A61 2FE4      MOV	R30,R20
     02A62 27FF      CLR	R31
     02A63 0FE0      ADD	R30,R16
     02A64 1FF1      ADC	R31,R17
     02A65 2422      CLR	R2
     02A66 8220      ST	Z,R2
-(0373) float SquareRootFloat(float number)
-(0374) {
+(0373) 					   
+(0374)       return filenamep;
     02A67 940C 3F87 JMP	pop_xgsetF000
 _SquareRootFloat:
   f                    --> Y,+12
@@ -13755,12 +13755,12 @@ _SquareRootFloat:
     02A69 940E 3E28 CALL	push_arg4
     02A6B 940E 3F82 CALL	push_xgsetF000
     02A6D 9760      SBIW	R28,0x10
-(0375)     long i;
-(0376)     float x, y;
-(0377)     const float f = 1.5F;
-(0378)     x = number * 0.5F;
-(0379)     y  = number;
-(0380)     i  = * ( long * ) &y;
+(0375) } 
+(0376) float SquareRootFloat(float number)
+(0377) {
+(0378)     long i;
+(0379)     float x, y;
+(0380)     const float f = 1.5F;
     02A6E E900      LDI	R16,0x90
     02A6F E010      LDI	R17,0
     02A70 940E 3EF5 CALL	elpm32
@@ -13768,7 +13768,7 @@ _SquareRootFloat:
     02A73 871D      STD	Y+13,R17
     02A74 872E      STD	Y+14,R18
     02A75 873F      STD	Y+15,R19
-(0381)     i  = 0x5f3759df - ( i >> 1 );  //卡马克
+(0381)     x = number * 0.5F;
     02A76 E80C      LDI	R16,0x8C
     02A77 E010      LDI	R17,0
     02A78 940E 3EF5 CALL	elpm32
@@ -13781,7 +13781,7 @@ _SquareRootFloat:
     02A81 8719      STD	Y+9,R17
     02A82 872A      STD	Y+10,R18
     02A83 873B      STD	Y+11,R19
-(0382)   //i  = 0x5f375a86 - ( i >> 1 );  //Lomont
+(0382)     y  = number;
     02A84 882C      LDD	R2,Y+20
     02A85 883D      LDD	R3,Y+21
     02A86 884E      LDD	R4,Y+22
@@ -13790,7 +13790,7 @@ _SquareRootFloat:
     02A89 8239      STD	Y+1,R3
     02A8A 824A      STD	Y+2,R4
     02A8B 825B      STD	Y+3,R5
-(0383)     y  = * ( float * ) &i;
+(0383)     i  = * ( long * ) &y;
     02A8C 01FE      MOVW	R30,R28
     02A8D 8020      LD	R2,Z
     02A8E 8031      LDD	R3,Z+1
@@ -13800,7 +13800,7 @@ _SquareRootFloat:
     02A92 823D      STD	Y+5,R3
     02A93 824E      STD	Y+6,R4
     02A94 825F      STD	Y+7,R5
-(0384)     y  = y * ( f - ( x * y * y ) );
+(0384)     i  = 0x5f3759df - ( i >> 1 );  //卡马克
     02A95 802C      LDD	R2,Y+4
     02A96 803D      LDD	R3,Y+5
     02A97 804E      LDD	R4,Y+6
@@ -13821,8 +13821,8 @@ _SquareRootFloat:
     02AA6 835D      STD	Y+5,R21
     02AA7 836E      STD	Y+6,R22
     02AA8 837F      STD	Y+7,R23
-(0385)     y  = y * ( f - ( x * y * y ) );
-(0386)     return number * y;
+(0385)   //i  = 0x5f375a86 - ( i >> 1 );  //Lomont
+(0386)     y  = * ( float * ) &i;
     02AA9 01FE      MOVW	R30,R28
     02AAA 9634      ADIW	R30,4
     02AAB 8020      LD	R2,Z
@@ -13833,7 +13833,7 @@ _SquareRootFloat:
     02AB0 8239      STD	Y+1,R3
     02AB1 824A      STD	Y+2,R4
     02AB2 825B      STD	Y+3,R5
-(0387) } 
+(0387)     y  = y * ( f - ( x * y * y ) );
     02AB3 8028      LD	R2,Y
     02AB4 8039      LDD	R3,Y+1
     02AB5 804A      LDD	R4,Y+2
@@ -13864,7 +13864,7 @@ _SquareRootFloat:
     02AD2 8319      STD	Y+1,R17
     02AD3 832A      STD	Y+2,R18
     02AD4 833B      STD	Y+3,R19
-(0388) //
+(0388)     y  = y * ( f - ( x * y * y ) );
     02AD5 8028      LD	R2,Y
     02AD6 8039      LDD	R3,Y+1
     02AD7 804A      LDD	R4,Y+2
@@ -13895,7 +13895,7 @@ _SquareRootFloat:
     02AF4 8319      STD	Y+1,R17
     02AF5 832A      STD	Y+2,R18
     02AF6 833B      STD	Y+3,R19
-(0389) //###############################################################//
+(0389)     return number * y;
     02AF7 890C      LDD	R16,Y+20
     02AF8 891D      LDD	R17,Y+21
     02AF9 892E      LDD	R18,Y+22
@@ -13916,13 +13916,13 @@ _debug:
     02B07 2EA2      MOV	R10,R18
     02B08 0168      MOVW	R12,R16
     02B09 9724      SBIW	R28,4
-(0390) //debug
-(0391) void debug(UINT8 *str,UINT8 val)
-(0392) {
-(0393)  UINT8 str2[4]={0,0,0,0};
-(0394)  str=str;
-(0395)  val=val;
-(0396)  #ifdef _UARTDEBUG
+(0390) } 
+(0391) //
+(0392) //###############################################################//
+(0393) //debug
+(0394) void debug(UINT8 *str,UINT8 val)
+(0395) {
+(0396)  UINT8 str2[4]={0,0,0,0};
     02B0A ED88      LDI	R24,0xD8
     02B0B E091      LDI	R25,1
     02B0C 01FE      MOVW	R30,R28
@@ -13933,17 +13933,17 @@ _debug:
     02B11 939A      ST	-Y,R25
     02B12 938A      ST	-Y,R24
     02B13 940E 4014 CALL	asgnblk
-(0397)  PrintString("\r\n");
-(0398)  PrintString(str);
-(0399)  PrintChar(val);
-(0400)  #endif
+(0397)  str=str;
+(0398)  val=val;
+(0399)  #ifdef _UARTDEBUG
+(0400)  PrintString("\r\n");
     02B15 ED0C      LDI	R16,0xDC
     02B16 E011      LDI	R17,1
     02B17 940E 35FE CALL	_PrintString
-(0401)  #ifdef _LCDDEBUG
+(0401)  PrintString(str);
     02B19 0186      MOVW	R16,R12
     02B1A 940E 35FE CALL	_PrintString
-(0402)  lp(str);
+(0402)  PrintChar(val);
     02B1C 2D0A      MOV	R16,R10
     02B1D 940E 3768 CALL	_PrintChar
     02B1F 9624      ADIW	R28,4
@@ -15347,12 +15347,12 @@ _GUI_check:
     02F6B 24CC      CLR	R12
 (0166) 	 	check(); //检测
     02F6C 940E 2802 CALL	_check
-(0167) 		StructToChar();
+(0167) 		StructToChar(); //转成字符串
     02F6E 940E 2981 CALL	_StructToChar
-(0168) 		WriteSDFile();
+(0168) 		WriteSDFile();  //写入sd卡
     02F70 940E 25DB CALL	_WriteSDFile
-(0169) 	 	//debug("index ",Result.Index);
-(0170) 		Result.Index++;
+(0169) 		//zigbee_send(); //发送
+(0170) 	 	Result.Index++; //索引自增一
     02F72 E041      LDI	R20,1
     02F73 E050      LDI	R21,0
     02F74 E060      LDI	R22,0
