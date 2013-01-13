@@ -9,6 +9,9 @@ void check(void );
 float SquareRootFloat(float number);
 char *get_name( char fnamep[] );
 unsigned int findIndex(char *filename,char *buf);
+void WriteFileHead(void) ;
+void selfTest(void);
+void WriteSDFile(void);
 #endif
 
 

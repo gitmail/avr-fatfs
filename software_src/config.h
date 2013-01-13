@@ -78,6 +78,7 @@ struct DATA {
 		long time1;
 		long now;
 		char autocheck;
+		int checkDeltaTime;
 		
   };  
  struct tm {

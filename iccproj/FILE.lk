@@ -1,0 +1,1 @@
+diskio.o ff.o delay.o main.o sd.o SPI.o usart.o 

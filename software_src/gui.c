@@ -34,8 +34,7 @@ const char M21[]="取消户外作业。";
 char GUI_date[17]="09月19日18:00:00\0";
 
 // 主菜单
-unsigned char GUI_mainmeu( void )
-{
+unsigned char GUI_mainmeu( void ){
  	unsigned char key=0; //init= nokey
 	unsigned char select=3;
 	LCD_CLR();
@@ -46,22 +45,24 @@ unsigned char GUI_mainmeu( void )
 	LCD_const_disp(2,1,"  检测  时钟调整");
 	LCD_const_disp(3,1,"  查询  数据传输");
 	LCD_const_disp(4,1,"  初始化");
+	Set_White(1,1,8,1);
+	Set_White(1,2,8,1);
+	Set_White(1,3,8,1);
+	Set_White(1,4,8,1);
 	set_white_n(select,0);
 	while(1)
 	{
 	 	key=kbscan();
-		dateRefresh(1);
+		dateRefresh(1); //更新系统时间
 		LCD_const_disp(1,1,GUI_get_date()); //显示时间
-		if((select>3) && (key==left || key==up ) )
-		{
+		if((select>3) && ( key==up ) ){
 		 Set_White(1,2,8,1);
 		 Set_White(1,3,8,1);
 		 Set_White(1,4,8,1);
 		 select--;
 		 set_white_n(select,0);
 		}
-		if((select<7) && (key==right || key==down ) )
-		{
+		if((select<7) && ( key==down ) ){
 		 Set_White(1,1,8,1);
 		 Set_White(1,2,8,1);
 		 Set_White(1,3,8,1);
@@ -69,8 +70,7 @@ unsigned char GUI_mainmeu( void )
 		 select++;
 		 set_white_n(select,0);
 		}
-		if(key == ok )
-		{
+		if(key == left ){
 		 Set_White(1,1,8,1);
 		 Set_White(1,2,8,1);
 		 Set_White(1,3,8,1);
@@ -78,9 +78,7 @@ unsigned char GUI_mainmeu( void )
 		 beep(3,select);
 		 return select;
 		}
-		
-		
-	}
+    }
 	return 0xff; //error
 	
 }
@@ -88,92 +86,148 @@ unsigned char GUI_mainmeu( void )
 //”检测 “菜单
 void GUI_check(void)
 {
- char key;
- char page=0,is_on=0;
- char selectCheckMode=config.autocheck;
- LCD_CLR();
- LCD_const_disp(1,1,"菜单/ 检测");
- LCD_const_disp(2,3,"自动");
- LCD_const_disp(3,3,"手动");
- if(selectCheckMode==1) {
- Set_White(1,2,8,0);
- Set_White(1,3,8,1);
- }
- else {
- Set_White(1,2,8,1);
- Set_White(1,3,8,0);
- }
- while(1){
+    char key;
+	char page=0,is_on=0;
+	long next_step_time=0;
+	char selectCheckMode=config.autocheck; //自动检测开关
+	LCD_CLR();
+	LCD_const_disp(1,1,"菜单/ 检测");
+	LCD_const_disp(2,3,"自动");		 
+	LCD_const_disp(3,3,"手动");
+	if(selectCheckMode==1) {
+	    Set_White(1,2,8,0);
+		Set_White(1,3,8,1);
+	}
+	else {
+		 Set_White(1,2,8,1);
+		 Set_White(1,3,8,0);
+	}
+//<<菜单/检测/手（自）动>>
+while(1){
  	key=kbscan();
-	if(key==left && selectCheckMode > 0){  
-		selectCheckMode=0;
-		Set_White(1,2,8,0);
- 		Set_White(1,3,8,1);
-		//delayms(500);
-		}
-	if(key==right && selectCheckMode < 1){  
+	//上键短按 选择
+	if(key==up && selectCheckMode == 1){  
+		    selectCheckMode=0;
+			Set_White(1,2,8,0);
+ 			Set_White(1,3,8,1);
+			//delayms(500);
+	}
+	//下键短按	选择
+	if(key==down && selectCheckMode == 0){  
 		selectCheckMode=1;
 		Set_White(1,2,8,1);
  		Set_White(1,3,8,0);
-	//delayms(500);
+	    //delayms(500);
 	}
-	if(key == up) {
+	//左键短按  进入
+	if(key == left) {
 		config.autocheck=selectCheckMode; 
 		Set_White(1,2,8,1);
  		Set_White(1,3,8,1);
 		delayms(500);
 		break ;		
 	}
-	if(key == down) {
+	//右键短按  返回
+	if(key == right) {
 		return ;		
 	}
-	
- }
-
- while(1)
- {    
-     key=kbscan();
-	 dateRefresh(1);
-	
-if(page == 0){
- 	 //显示日期时间
-	 LCD_var_disp(1,1,GUI_get_date());
-	//显示温度
-	 LCD_const_disp(2,1,"温度 (℃):");
-	 LCD_var_disp(2,6,Result.TempChar);
-	//显示风速
-	 LCD_const_disp(3,1,"风速(m/s): ");
-	 LCD_const_disp(3,6,Result.WSChar);
-	 if(is_on == 1)
-	 {
-	  LCD_const_disp(4,1,"倒计时: ");
-	 LCD_print4num(4,5,config.time1-config.now);
-	 }else 
-	 {LCD_const_disp(4,1,"            ");}
-	 
-	 
-	} 
-if(page == 1){
-	LCD_var_disp(1,1,GUI_get_date());
-	LCD_const_disp(2,1,"风冷指数: ");
-	LCD_var_disp(2,6,Result.WCIChar);						
-	LCD_const_disp(3,1,"等价温度: ");
-	LCD_var_disp(3,6,Result.ECTChar);	 
-	LCD_const_disp(4,1,"相当温度: ");
-	LCD_var_disp(4,6,Result.TeqChar);	
+} //end of while
+if(config.autocheck == 1) {
+    next_step_time=now+config.checkDeltaTime;
+}
+while(1){
+	key=kbscan();
+	_GUI_datashow(1,page);
+	if(config.autocheck == 1 && now > next_step_time ){
+	    next_step_time=now+config.checkDeltaTime; //更新下一步操作时间
+		if(page < 5) page++ ;
+		else {
+			page=0; //返回起始页面
+			key=left; //模拟开始检测按键
+		}
 	}
-if(page == 2){
-	LCD_var_disp(1,1,GUI_get_date());
-	LCD_const_disp(2,1,"冻伤危害性:");
-	if(Result.WeiHai==0){LCD_const_disp(3,1,"  冻伤危害性小");			 }
-	else if(Result.WeiHai==1){	LCD_const_disp(3,1,"  冻伤危害性较大");	 }
-	else if(Result.WeiHai==2){	LCD_const_disp(3,1,"  冻伤危害性很大");	 }
-	else LCD_const_disp(3,1,"冻伤危害性小。");
-	}	  
-if(page==3){
-	 LCD_const_disp(1,1,labelH);		
-	 switch( Result.WeiHai )
-	 {
+	//LCD_print2num(4,4,is_on);
+	if(key==left && is_on==0){ //按left键开始测量
+	  			 beep(1,0);
+	  			 //fwrite; 
+				 config.time1=config.now+config.THRESHOLD_delta_sec;
+				 is_on=1; //start count
+	 //			 timer1_init(); //计数
+				}
+	if(is_on == 1 ){
+	    LCD_const_disp(4,1,"倒计时: ");
+	    LCD_print4num(4,5,config.time1-config.now);
+	}
+	else {
+	   LCD_const_disp(4,1,"            ");
+	}						
+	if(is_on == 1 && config.now>=config.time1 ){
+	    is_on=0;
+	 	check(); //检测
+		StructToChar();
+		WriteSDFile();
+	 	//debug("index ",Result.Index);
+		Result.Index++;
+ 	} 	
+    if(key==left){ //左键 : 页面减 
+	    if(page>0) page--;
+	    LCD_CLR();
+	    LCD_Init();
+	}
+	if(key==right){ //右键 ： 页面加
+	    if(page<5) page++;
+	  	else page = 0;
+	    LCD_CLR();
+	    LCD_Init();
+	}
+	if(key==down && is_on==0){	//长安右键 退出
+	    LCD_CLR();
+	 	LCD_Init();	  
+ 	 	LCD_const_disp(4,5,"退出    "); 
+	 	delayms(200);
+	 	LCD_const_disp(4,7,".."); 
+	 	delayms(200);
+	 	LCD_const_disp(4,8,".."); 	
+	 	delayms(500);
+	 	LCD_CLR();
+	 	return ;
+	}
+    delayms(30); 
+}//end while
+}//end function
+void _GUI_datashow(unsigned char clockfresh,char page){
+	if( clockfresh ) dateRefresh(clockfresh); //时钟刷新
+	if(page == 0){
+ 	//显示日期时间
+	    LCD_var_disp(1,1,GUI_get_date());
+	//显示温度
+	 	LCD_const_disp(2,1,"温度 (℃):");
+	 	LCD_var_disp(2,6,Result.TempChar);
+	//显示风速
+	    LCD_const_disp(3,1,"风速(m/s): ");
+	 	LCD_const_disp(3,6,Result.WSChar);
+
+	 } 
+	 if(page == 1){
+	     LCD_var_disp(1,1,GUI_get_date());
+		 LCD_const_disp(2,1,"风冷指数: ");
+		 LCD_var_disp(2,6,Result.WCIChar);						
+		 LCD_const_disp(3,1,"等价温度: ");
+		 LCD_var_disp(3,6,Result.ECTChar);	 
+		 LCD_const_disp(4,1,"相当温度: ");
+		 LCD_var_disp(4,6,Result.TeqChar);	
+	 }
+	 if(page == 2){
+	     LCD_var_disp(1,1,GUI_get_date());
+		 LCD_const_disp(2,1,"冻伤危害性:");
+	 if(Result.WeiHai==0){LCD_const_disp(3,1,"  冻伤危害性小");			 }
+	 else if(Result.WeiHai==1){	LCD_const_disp(3,1,"  冻伤危害性较大");	 }
+	 else if(Result.WeiHai==2){	LCD_const_disp(3,1,"  冻伤危害性很大");	 }
+	 else LCD_const_disp(3,1,"冻伤危害性小。");
+	 }	  
+	 if(page==3){
+	     LCD_const_disp(1,1,labelH);		
+	 	 switch( Result.WeiHai ){
 			case 0 :
 			LCD_const_disp(2,1,H01);
 			LCD_const_disp(3,1,H02);
@@ -189,219 +243,170 @@ if(page==3){
 			LCD_const_disp(3,1,H22);
 			LCD_const_disp(4,1,H23);
 			break;
-			default :
-			;
+			default : ;
 		}
-			
-} 
-if(page==4){
-	 LCD_const_disp(1,1,labelM);		
-	 switch( Result.WeiHai )
-	 {
-	 		case 0 :
-			LCD_const_disp(2,1,M01);
-			LCD_const_disp(3,1,M02);
-			if(Result.Temperature < 17.7) 
-				{LCD_const_disp(4,1,"戴面罩；禁油彩。");}
-			else if(Result.Temperature < 12)
-				 {LCD_const_disp(4,1,"禁油彩。        \0");}
-			break;
-			
-			case 1 : 
-			LCD_const_disp(2,1,M11);
-			LCD_const_disp(3,1,M12);
-			LCD_const_disp(4,1,M13);
-			break ;
-			case 2 :
-			LCD_const_disp(2,1,M21);
-			break ;
-			default :
-			;
-	}
-			
-}
-if(page==5){
-	 LCD_const_disp(1,1,labelL);		
-	 switch( Result.WeiHai )
-	  {	
-			case 0 :
-			LCD_const_disp(2,1,L01);
-			if(Result.Temperature < -12) {
-			LCD_const_disp(3,1,L02);
-			LCD_const_disp(4,1,L03);
-			} else 
-			{
+	 } 
+	 if(page==4){
+	 		LCD_const_disp(1,1,labelM);		
+	 		switch( Result.WeiHai ){
+	 			case 0 :
+				LCD_const_disp(2,1,M01);
+				LCD_const_disp(3,1,M02);
+				if(Result.Temperature < 17.7){
+				    LCD_const_disp(4,1,"戴面罩；禁油彩。");
+				}
+				else if(Result.Temperature < 12){
+				    LCD_const_disp(4,1,"禁油彩。        \0");
+				}
+				break;
+				case 1 : 
+			    LCD_const_disp(2,1,M11);
+				LCD_const_disp(3,1,M12);
+				LCD_const_disp(4,1,M13);
+				break ;
+				case 2 :
+				LCD_const_disp(2,1,M21);
+				break ;
+				default :;
+	 		}
+	 }
+	 if(page==5){
+	     LCD_const_disp(1,1,labelL);		
+	 	 switch( Result.WeiHai ){	
+		     case 0 :
+			 LCD_const_disp(2,1,L01);
+			 if(Result.Temperature < -12) {
+			 LCD_const_disp(3,1,L02);
+			 LCD_const_disp(4,1,L03);
+			 } 
+			 else {
 			 LCD_const_disp(3,1,L03);
-			}
-			break;
-			case 1: 
-			LCD_const_disp(2,1,L11);
-			LCD_const_disp(3,1,L12);
-			LCD_const_disp(3,1,L13);
-			break ;
-			case 2 :
-			LCD_const_disp(2,1,L21);
-			break;
-			default :
-			;
-			} //end switch
-			
-}  //end if
-	 //LCD_print2num(4,4,is_on);
-	  if(key==ok){ //按ok键开始测量
-	  			 beep(1,0);
-	  			 //fwrite; 
-				 config.time1=config.now+config.THRESHOLD_delta_sec;
-				 is_on=1; //start count
-	 //			 timer1_init(); //计数
-				}			
-	if(is_on == 1 && config.now>=config.time1 )
-	{
-	 is_on=0;
-	 check(); //检测
-	 //storage(); //存储
- 
-	} 	
-	
-	  
-    if(key==left) //左键 : 页面减
-	{ 
-	  if(page>0) page--;
-	  LCD_CLR();
-	  LCD_Init();
-	}
-	 
-  if(key==right) //右键 ： 页面加
-	{ 
-	  if(page<5) page++;
-	  else page = 0;
-	  LCD_CLR();
-	  LCD_Init();
-	}
-	if(key==lright && is_on==0)	//长安右键 退出
-	{ 
-	 LCD_CLR();
-	 LCD_Init();	  
- 	 LCD_const_disp(4,5,"退出    "); 
-	 delayms(200);
-	 LCD_const_disp(4,7,".."); 
-	 delayms(200);
-	 LCD_const_disp(4,8,".."); 	
-	 delayms(500);
-	 LCD_CLR();
-	 return ;
-	}
-    delayms(100); 
-}//end while
-
+			 }
+			 break;
+			 case 1: 
+			 LCD_const_disp(2,1,L11);
+			 LCD_const_disp(3,1,L12);
+			 LCD_const_disp(3,1,L13);
+			 break ;
+			 case 2 :
+			 LCD_const_disp(2,1,L21);
+			 break;
+			 default : ;
+		} //end switch
+	}  //end if
 }
-
-char * GUI_get_date(void) 
-{  
-   //2012年12月11日19:00:00
-  GUI_date[0]=Result.Date[4]; 
-  GUI_date[1]=Result.Date[5];
-  GUI_date[4]=Result.Date[6];
-  GUI_date[5]=Result.Date[7];
-  GUI_date[8]=Result.Time[0];
-  GUI_date[9]=Result.Time[1];
-  GUI_date[11]=Result.Time[4];
-  GUI_date[12]=Result.Time[5];
-  GUI_date[14]=Result.Time[8];
-  GUI_date[15]=Result.Time[9];
-  GUI_date[16]='\0';
-  return GUI_date;
+char * GUI_get_date(void) {  
+  //格式：2012年12月11日19:00:00
+    GUI_date[0]=Result.Date[4]; 
+    GUI_date[1]=Result.Date[5];
+    GUI_date[4]=Result.Date[6];
+    GUI_date[5]=Result.Date[7];
+    GUI_date[8]=Result.Time[0];
+    GUI_date[9]=Result.Time[1];
+    GUI_date[11]=Result.Time[4];
+    GUI_date[12]=Result.Time[5];
+    GUI_date[14]=Result.Time[8];
+    GUI_date[15]=Result.Time[9];
+    GUI_date[16]='\0';
+    return GUI_date;
 }
 //设置时间 菜单 
-void GUI_set_time(void)
- {
- 
- unsigned char p=2;
- char GUI_up[]= "↑";
- char GUI_down[]= "↓";
- char *pD=NULL,*pT=NULL;
- char *ary=GUI_up;
- unsigned char i=0,keyc=NO_KEY;
-LCD_CLR(); //清屏
-pD="2012年12月31日\0";
-pT=Result.Time;
-LCD_const_disp(1,1,"时间设置:       ");
-LCD_const_disp(4,7,"保存");
-  
-LCD_var_disp(3,p,ary);
-LCD_var_disp(2,1,pD);
-LCD_var_disp(4,1,pT);
-delayms(250);
-while(1)
-{
-keyc=kbscan();
-pD[2]=Result.Date[2];
-pD[3]=Result.Date[3];
-pD[6]=Result.Date[4];
-pD[7]=Result.Date[5];
-pD[10]=Result.Date[6];
-pD[11]=Result.Date[7];  
+void GUI_set_time(void){
+    unsigned char p=2;
+	char GUI_up[]= "↑";
+	char GUI_down[]= "↓";
+	char *pD=NULL,*pT=NULL;
+	char *ary=GUI_up;
+	unsigned char i=0,keyc=NO_KEY;
+	LCD_CLR(); //清屏
+	pD="2012年12月31日\0";
+	pT=Result.Time;
+	LCD_const_disp(1,1,"时间设置:       ");
+	LCD_const_disp(4,7,"保存");
+	LCD_var_disp(3,p,ary);
+	LCD_var_disp(2,1,pD);
+	LCD_var_disp(4,1,pT);
+	delayms(250);
+	while(1){
+	    keyc=kbscan();
+		pD[2]=Result.Date[2];
+		pD[3]=Result.Date[3];
+		pD[6]=Result.Date[4];
+		pD[7]=Result.Date[5];
+		pD[10]=Result.Date[6];
+		pD[11]=Result.Date[7];  
 
-switch(i){
-         case 0: p=2;ary=GUI_up;  //年
-		 	  	 if(keyc==up){ if(time_buf[1]<0x99){ time_buf[1]++;
-												  if((time_buf[1]&0x0f)==0x0a) time_buf[1]=time_buf[1]+6;
-												   }
+		switch(i){
+            case 0: p=2;ary=GUI_up;  //年
+		 	  	 if(keyc==up){
+				     if(time_buf[1]<0x99){ 
+					     time_buf[1]++;
+						 if((time_buf[1]&0x0f)==0x0a) 
+						     time_buf[1]=time_buf[1]+6;
+					 }
 												     
-								 }				  
+				}				  
  					        
-			     else if(keyc==down){ if(time_buf[1]>0x00){  time_buf[1]--;
-				 	  			   						 if((time_buf[1]&0x0f)==0x0f) time_buf[1]=time_buf[1]-6;
-		 	  	 			  					        }
+			    else if(keyc==down){ 
+				    if(time_buf[1]>0x00){
+				        time_buf[1]--;
+						if((time_buf[1]&0x0f)==0x0f) 
+						    time_buf[1]=time_buf[1]-6;
+		 	  	 		 }
 												   
-								 }			   		
+					}			   		
 				else if(keyc==right) {i=1;}
 				break;
-		 case 1: p=4;ary=GUI_up;  //月
-		  	  	if(keyc==up){ if(time_buf[2]<0x12){  time_buf[2]++;	
-													if((time_buf[2]&0x0f)==0x0a) time_buf[2]+=6;
-													 
-													
-												 }
-							else time_buf[2]=0x01;
-						  }						 
-				if(keyc==down){ if(time_buf[2]>0x01){  time_buf[2]--;	
-													if((time_buf[2]&0x0f)==0x0f) time_buf[2]-=6;
-													
-												 }
-							 else time_buf[2]=0x12;						
-						  }						 							
-				if(keyc==left) {i=0;   }									
-				if(keyc==right) {i=2;   }  
-				 break;
-				 
-				 									
-         
-		 case 2: p=6;ary=GUI_up;
-		 	  	 if(keyc==up){ if(time_buf[3]<0x31){ time_buf[3]++;
-												  if ((time_buf[3]&0x0f)==0x0a) time_buf[3]=time_buf[3]+6;
-											
-											if(  //2 4 6 9 11 月最大30天
-											( ((time_buf[2]==0x02) || (time_buf[2]==0x04)|| (time_buf[2]==0x06)||
-											  (time_buf[2]==0x09)||(time_buf[2]==0x11))&&(time_buf[3]==0x31) 
-											)  
-											  )
-											{time_buf[3]=0x30;}
-											      }
+		 case 1:p=4;ary=GUI_up;  //月
+		  	  	if(keyc==up){
+				    if(time_buf[2]<0x12){  
+					    time_buf[2]++;	
+						if((time_buf[2]&0x0f)==0x0a) time_buf[2]+=6;
+					}
+					else 
+					    time_buf[2]=0x01;
+				}						 
+				if(keyc==down){ 
+				    if(time_buf[2]>0x01){  
+					    time_buf[2]--;	
+						if((time_buf[2]&0x0f)==0x0f) 
+						    time_buf[2]-=6;
+			  		}
+				    else 
+					    time_buf[2]=0x12;						
+				}						 							
+				if(keyc==left){
+				    i=0;   
+				}									
+				if(keyc==right){
+				    i=2;   
+				}  
+				break;
+	 	 case 2: p=6;ary=GUI_up;
+		 	  	 if(keyc==up){ 
+				     if(time_buf[3]<0x31){ 
+				         time_buf[3]++;
+						 if ((time_buf[3]&0x0f)==0x0a) time_buf[3]=time_buf[3]+6;
+						 if(  //2 4 6 9 11 月最大30天
+						  ( ((time_buf[2]==0x02) || (time_buf[2]==0x04)|| (time_buf[2]==0x06)||
+						  (time_buf[2]==0x09)||(time_buf[2]==0x11))&&(time_buf[3]==0x31))){
+						      time_buf[3]=0x30;
+						}
+				     }
  									  
- 					         }
-			     else if(keyc==down){ if(time_buf[3]>0x01){  time_buf[3]--;
-				 	  			   						 if((time_buf[3]&0x0f)==0x0f) time_buf[3]=time_buf[3]-6;
-		 	  	 			  					        }
-								   else time_buf[3]=0x31;						
-												   
-								 }
+ 				 }
+			     else if(keyc==down){ 
+				      if(time_buf[3]>0x01){  
+					     time_buf[3]--;
+				 	  	 if((time_buf[3]&0x0f)==0x0f) time_buf[3]=time_buf[3]-6;
+		 	  	 	 }
+					 else time_buf[3]=0x31;						
+											   
+				}
 				if(keyc==left) {i=1;  }						 			   		
 				if(keyc==right) {i=3;    }  	
-				 break;
-							
-				
- case 3:p=1;ary=GUI_down;
+				break;
+		case 3:p=1;ary=GUI_down;
  	  	if(keyc==up){ if(time_buf[4]<0x23){  time_buf[4]++;	
 													if((time_buf[4]&0x0f)==0x0a) time_buf[4]+=6;
 													 

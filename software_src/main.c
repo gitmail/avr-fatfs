@@ -26,9 +26,9 @@ void initDevices(void){
 	 LCD_SW(1);
 	 config.THRESHOLD_delta_sec=10; //一次检测用时
 	 config.autocheck=0;
+	 config.checkDeltaTime=20;
 }
-void WriteFileHead(void) ;
-void selfTest(void);
+
 ////////////////////////////////////////////////////////////////
 void main(void){
 	 UINT8 tmp,keycode;
@@ -49,13 +49,10 @@ void main(void){
 		 
 	 	 delayms(1);
 	 }
-	
-	
-
 
 }
 void selfTest(void){
-	float tmp=0;
+	float tmp=0;                                                                
 	char str1[6],str2[6];
 	
 	 //自检程序
