@@ -88,9 +88,10 @@ void GUI_check(void){
     char key;
 	char page=0,is_on=0;
 	char windcounter=0;
-	long next_step_time=0;
+	unsigned long next_step_time=0;
 	char selectCheckMode=config.autocheck; //自动检测开关
 RE_IN:
+	dateRefresh(1);
 	LCD_CLR();
 	LCD_const_disp(1,1,"菜单/ 检测");
 	LCD_const_disp(2,3,"自动");		 
@@ -111,13 +112,13 @@ RE_IN:
 		if(key==up || key ==down){
 		    if(selectCheckMode >0){
 			    selectCheckMode=0;
-				Set_White(1,2,8,0);
-	 			Set_White(1,3,8,1);
+				Set_White(1,2,8,1);
+	 			Set_White(1,3,8,0);
 			}
 			else {
 			    selectCheckMode=1;
-				Set_White(1,2,8,1);
-	 			Set_White(1,3,8,0);
+				Set_White(1,2,8,0);
+	 			Set_White(1,3,8,1);
 			}
 			
 		}
@@ -134,10 +135,12 @@ RE_IN:
 		}
 		key=0;
 	} //end of while
-
     //自动开启检测
+	dateRefresh(0);
 	is_on =1 ;
-    //----完成检测和存储------
+	config.time1=config.now+config.THRESHOLD_delta_sec;
+	Result.TempChar[0]=0; //清除上次结果
+	Result.WSChar[0]=0;
 	while(1){
 		key=kbscan();
 		if(key != 0) beep(0,1);
@@ -155,7 +158,8 @@ RE_IN:
 		 	goto RE_IN;
 		}
 		if(is_on==1){ 
-		    _GUI_datashow(1,page); //更新时间
+			dateRefresh(1); 
+		    _GUI_datashow(page); //更新时间
 		    if(config.now < config.time1) {
 				//时间更新 开启风速检测 等待检测 不支持翻页
 				if(windcounter==0){
@@ -163,8 +167,11 @@ RE_IN:
 					timer1_init(); //开启风速传感器技术
 				}
 				if(page == 0 ){
+				
 				    LCD_const_disp(4,1,"正在检测");
 					LCD_print4num(4,5,config.time1-config.now);
+					LCD_const_disp(2,6,"      ");
+					LCD_const_disp(3,6,"      ");
 				}
 			} 
 			else {
@@ -182,7 +189,8 @@ RE_IN:
 		   }
 		}
 		else { //is_on == 0 非检测状态 手动翻页/自动翻页
-		    _GUI_datashow(0,page); //不更新时间
+		    dateRefresh(0);//不更新时间
+			_GUI_datashow(page); 
 			//手动翻页 
 			if(key==up){ //上键 : 页面减 
 		        if(page>0) page--;
@@ -190,14 +198,17 @@ RE_IN:
 		    	LCD_CLR();
 		    	LCD_Init();
 			}
-			if(key==down){ //下键 ： 页面加
+			if(key==down){//下键 ： 页面加
 		        if(page<5) 
 				    page++;
-		  		else 
+		  		else  
 				    page = 0;
 		    	LCD_CLR();
 		    	LCD_Init();
 		    }
+			//LCD_print2num(4,1,page);
+			//LCD_print4num(4,3,config.now);
+			//LCD_print4num(4,6,next_step_time);
 			if( config.autocheck == 1){  //如果开启自动翻页
 			      if(config.now >= next_step_time )	{
 				      next_step_time = config.now + config.checkDeltaTime;
@@ -205,8 +216,13 @@ RE_IN:
 					  if( page==6 ){
 					      //自动翻到最后页，页面清零开启下次检测
 					      page = 0;
-						  is_on = 1;
-					  }    
+						  dateRefresh(1); //刷新时间
+						  is_on =1 ; //开启检测
+						  config.time1=config.now+config.THRESHOLD_delta_sec; //更新下次检测时间
+						  Result.TempChar[0]=0; //清除上次结果
+						  Result.WSChar[0]=0;
+					  }
+				      LCD_CLR();      
 				  }  
 			}
 			 
@@ -214,8 +230,7 @@ RE_IN:
 	    delayms(10); 
 	}//end while
 }//end function
-void _GUI_datashow(unsigned char clockfresh,char page){
-	if( clockfresh ) dateRefresh(clockfresh); //时钟刷新
+void _GUI_datashow(char page){
 	if(page == 0){
  	//显示日期时间
 	    LCD_var_disp(1,1,GUI_get_date());
@@ -539,7 +554,8 @@ CharToStruct();
 while(1){
 	key=kbscan();
 	if(key != 0) beep(0,1);
-	_GUI_datashow(0,page);
+	dateRefresh(0);
+	_GUI_datashow(page);
 	if( key==left ){ //按left键下一条
 pre_item:
 		if(index < Result.Index){
@@ -599,8 +615,6 @@ void GUI_welcome(void){
 void dateRefresh(unsigned char readhardware)
 {	//readhardware = 0 not refresh, =1 refresh
 	ds1302_read_time();
-	config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //更新系统心跳
-	if( readhardware >=1 ){  
 	t.tm_sec=(((time_buf[6]&0x70)>>4)*10)+(time_buf[6]&0x0f);
 	t.tm_min=  (((time_buf[5]&0x70)>>4)*10)+(time_buf[5]&0x0f);
 	t.tm_hour=  (((time_buf[4]&0x70)>>4)*10)+(time_buf[4]&0x0f);
@@ -608,6 +622,9 @@ void dateRefresh(unsigned char readhardware)
 	t.tm_mon= (((time_buf[2]&0x70)>>4)*10)+(time_buf[2]&0x0f);
 	t.tm_wday=	(time_buf[7]&0x0f);
     t.tm_year=	(((time_buf[1]&0x70)>>4)*10)+(time_buf[1]&0x0f);
+	config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //更新系统心跳
+	if( readhardware >=1 ){  
+	config.Relay=relay(!config.Relay);
 	Result.Date[0]='2';
 	Result.Date[1]='0';
 	Result.Date[2]=t.tm_year/10+'0';

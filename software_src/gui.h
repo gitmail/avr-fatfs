@@ -6,7 +6,7 @@ char *GUI_get_date(void) ;
 void GUI_check(void);
 unsigned char GUI_mainmeu( void );
 void dateRefresh(unsigned char readhardware);
-void _GUI_datashow(unsigned char clockfresh,char page);
+void _GUI_datashow(char page);
 void GUI_welcome(void);
 void GUI_readback(char *buf);
 //按键操作 基本规则

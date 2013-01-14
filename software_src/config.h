@@ -74,9 +74,9 @@ struct DATA {
 		char Relay;
 		char LcdBackLight;
 		char BackTemp;
-		long THRESHOLD_delta_sec;
-		long time1;
-		long now;
+		unsigned long THRESHOLD_delta_sec;
+		unsigned long time1;
+		unsigned long now;
 		char autocheck;
 		int checkDeltaTime;
 		char readMode; //0=最后一次 1=按顺序d
