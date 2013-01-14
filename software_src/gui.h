@@ -8,6 +8,7 @@ unsigned char GUI_mainmeu( void );
 void dateRefresh(unsigned char readhardware);
 void _GUI_datashow(unsigned char clockfresh,char page);
 void GUI_welcome(void);
+void GUI_readback(char *buf);
 //按键操作 基本规则
 //1 up   上键/左键
 //2 down 下键/右键

@@ -79,6 +79,7 @@ struct DATA {
 		long now;
 		char autocheck;
 		int checkDeltaTime;
+		char readMode; //0=最后一次 1=按顺序d
 		
   };  
  struct tm {

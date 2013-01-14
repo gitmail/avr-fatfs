@@ -12,6 +12,8 @@ unsigned int findIndex(char *filename,char *buf);
 void WriteFileHead(void) ;
 void selfTest(void);
 void WriteSDFile(void);
+void CharToStruct(void);
+void timer1_init(void);
 #endif
 
 

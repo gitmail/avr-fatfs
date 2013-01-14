@@ -28,9 +28,17 @@ void initDevices(void){
 	 config.THRESHOLD_delta_sec=10; //一次检测用时
 	 config.autocheck=0;
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
+	 config.readMode = 0;
 	 SEI();
 }
-
+void timer1_init(void)
+{
+ TCCR1B = 0x00; //stop
+ TCNT1H = 0x00 /*INVALID SETTING*/; //setup
+ TCNT1L = 0x00 /*INVALID SETTING*/;
+ TCCR1A = 0x00;
+ TCCR1B = 0x46; //start Timer
+}
 ////////////////////////////////////////////////////////////////
 void main(void){
 	 UINT8 tmp,keycode;
@@ -44,11 +52,14 @@ void main(void){
 	 //selfTest();
 	 GUI_welcome();
 	 while(1){
+	     delayms(8000);
+	 }
+	 while(1){
 	    tmp=GUI_mainmeu();
 		switch(tmp){
 		    case 3 : GUI_check(); break; 
 			case 4 : GUI_set_time(); break ;
-			//case 5 : GUI_read_back(); break;
+			case 5 : GUI_readback(buf512); break;
 			//case 6 : GUI_send_date();
 			case 7 : selfTest(); break ;
 			default : break;

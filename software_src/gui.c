@@ -84,12 +84,13 @@ unsigned char GUI_mainmeu( void ){
 }
 
 //”检测 “菜单
-void GUI_check(void)
-{
+void GUI_check(void){
     char key;
 	char page=0,is_on=0;
+	char windcounter=0;
 	long next_step_time=0;
 	char selectCheckMode=config.autocheck; //自动检测开关
+RE_IN:
 	LCD_CLR();
 	LCD_const_disp(1,1,"菜单/ 检测");
 	LCD_const_disp(2,3,"自动");		 
@@ -102,98 +103,116 @@ void GUI_check(void)
 		 Set_White(1,2,8,1);
 		 Set_White(1,3,8,0);
 	}
+	
 //<<菜单/检测/手（自）动>>
-while(1){
- 	key=kbscan();
-	//上键短按 选择
-	if(key==up || key ==down){
-	    if(selectCheckMode == 1){
-		    selectCheckMode=0;
-			Set_White(1,2,8,0);
- 			Set_White(1,3,8,1);
+	while(1){
+	 	key=kbscan();
+		//上键短按 选择
+		if(key==up || key ==down){
+		    if(selectCheckMode >0){
+			    selectCheckMode=0;
+				Set_White(1,2,8,0);
+	 			Set_White(1,3,8,1);
+			}
+			else {
+			    selectCheckMode=1;
+				Set_White(1,2,8,1);
+	 			Set_White(1,3,8,0);
+			}
+			
 		}
-		else {
-		    selectCheckMode=1;
+		//左键短按  进入
+		if(key == left) {
+			config.autocheck=selectCheckMode; 
 			Set_White(1,2,8,1);
- 			Set_White(1,3,8,0);
+	 		Set_White(1,3,8,1); 
+			break ;		
 		}
-		
-	}
-	//左键短按  进入
-	if(key == left) {
-		config.autocheck=selectCheckMode; 
-		Set_White(1,2,8,1);
- 		Set_White(1,3,8,1);
-		delayms(300);
-		break ;		
-	}
-	//右键短按  返回
-	if(key == right) {
-		return ;		
-	}
-	key=0;
-} //end of while
-if(config.autocheck == 1) {
-    next_step_time=now;
-}
-while(1){
-	key=kbscan();
-	if(key != 0) beep(0,1);
-	_GUI_datashow(1,page);
-	if(config.autocheck == 1 && now > next_step_time ){
-	    next_step_time=now+config.checkDeltaTime; //更新下一步操作时间
-		if(page < 5) page++ ;
-		else {
-			page=0; //返回起始页面
-			key=left; //模拟开始检测按键
+		//右键短按  返回
+		if(key == right) {
+			return ;		
 		}
-	}
-	//LCD_print2num(4,4,is_on);
-	if(key==left && is_on==0){ //按left键开始测量
-	  			 beep(1,0);
-	  			 //fwrite; 
-				 config.time1=config.now+config.THRESHOLD_delta_sec;
-				 is_on=1; //start count
-	 //			 timer1_init(); //计数
+		key=0;
+	} //end of while
+
+    //自动开启检测
+	is_on =1 ;
+    //----完成检测和存储------
+	while(1){
+		key=kbscan();
+		if(key != 0) beep(0,1);
+		if(key==right){	//右键 退出
+		    is_on=0;
+			LCD_CLR();
+		 	LCD_Init();	  
+	 	 	LCD_const_disp(4,5,"退出    "); 
+		 	delayms(200);
+		 	LCD_const_disp(4,7,".."); 
+		 	delayms(200);
+		 	LCD_const_disp(4,8,".."); 	
+		 	delayms(500);
+		 	LCD_CLR();
+		 	goto RE_IN;
+		}
+		if(is_on==1){ 
+		    _GUI_datashow(1,page); //更新时间
+		    if(config.now < config.time1) {
+				//时间更新 开启风速检测 等待检测 不支持翻页
+				if(windcounter==0){
+				    windcounter=1; //清零开启风速计数器
+					timer1_init(); //开启风速传感器技术
 				}
-	if(is_on == 1 && page == 0){
-	    LCD_const_disp(4,1,"倒计时: ");
-	    LCD_print4num(4,5,config.time1-config.now);
-	}
-						
-	if(is_on == 1 && config.now>=config.time1 ){
-	    is_on=0;
-	 	check(); //检测
-		StructToChar(); //转成字符串
-		WriteSDFile();  //写入sd卡
-		//zigbee_send(); //发送
-	 	Result.Index++; //索引自增一
- 	} 	
-    if(key==up){ //上键 : 页面减 
-	    if(page>0) page--;
-	    LCD_CLR();
-	    LCD_Init();
-	}
-	if(key==down){ //下键 ： 页面加
-	    if(page<5) page++;
-	  	else page = 0;
-	    LCD_CLR();
-	    LCD_Init();
-	}
-	if(key==right && is_on==0){	//右键 退出
-	    LCD_CLR();
-	 	LCD_Init();	  
- 	 	LCD_const_disp(4,5,"退出    "); 
-	 	delayms(200);
-	 	LCD_const_disp(4,7,".."); 
-	 	delayms(200);
-	 	LCD_const_disp(4,8,".."); 	
-	 	delayms(500);
-	 	LCD_CLR();
-	 	return ;
-	}
-    delayms(30); 
-}//end while
+				if(page == 0 ){
+				    LCD_const_disp(4,1,"正在检测");
+					LCD_print4num(4,5,config.time1-config.now);
+				}
+			} 
+			else {
+			   //检测完成 获得数据 转换数据 存储数据 切换到非检测状态
+			    windcounter =0 ; //关闭风速传感器计数器
+				check();
+				StructToChar(); //转成字符串
+				WriteFileHead();//重写文件头
+				WriteSDFile();  //写入sd卡
+				//zigbee_send(); //发送
+				Result.Index++; //索引自增一
+				is_on=0; //切换到非检测状态
+				next_step_time=config.now+config.checkDeltaTime;//自动翻页时间更新
+				page=0;
+		   }
+		}
+		else { //is_on == 0 非检测状态 手动翻页/自动翻页
+		    _GUI_datashow(0,page); //不更新时间
+			//手动翻页 
+			if(key==up){ //上键 : 页面减 
+		        if(page>0) page--;
+				else page =5;
+		    	LCD_CLR();
+		    	LCD_Init();
+			}
+			if(key==down){ //下键 ： 页面加
+		        if(page<5) 
+				    page++;
+		  		else 
+				    page = 0;
+		    	LCD_CLR();
+		    	LCD_Init();
+		    }
+			if( config.autocheck == 1){  //如果开启自动翻页
+			      if(config.now >= next_step_time )	{
+				      next_step_time = config.now + config.checkDeltaTime;
+					  page++;
+					  if( page==6 ){
+					      //自动翻到最后页，页面清零开启下次检测
+					      page = 0;
+						  is_on = 1;
+					  }    
+				  }  
+			}
+			 
+		} 
+	    delayms(10); 
+	}//end while
 }//end function
 void _GUI_datashow(unsigned char clockfresh,char page){
 	if( clockfresh ) dateRefresh(clockfresh); //时钟刷新
@@ -468,14 +487,102 @@ void GUI_set_time(void){
 		  ds1302_write_time(); 
           LCD_const_disp(4,7,"    ");		  
 		  LCD_const_disp(3,1,"          已保存"); 
-		  delayms(500);
+		  delayms(300);
 		  LCD_CLR(); //清屏
 		  return ;
 		  }
  delayms(2);	  
 }//endwhile(1)
 }
-
+void GUI_readback(char *buf){
+    char key=0;
+	char page=0;
+	long index=Result.Index;
+	LCD_CLR(); //清屏
+	LCD_const_disp(1,1,"菜单/ 检测");
+    LCD_const_disp(2,3,"最后一次");		 
+	LCD_const_disp(3,3,"按顺序");
+	//<<菜单/检测/手（自）动>>
+while(1){
+ 	key=kbscan();
+	//上键短按 选择
+	if(key==up || key ==down){
+	    if(config.readMode == 0){
+		    config.readMode=1;
+			Set_White(1,2,8,0);
+ 			Set_White(1,3,8,1);
+			index=Result.Index;	
+		}
+		else {
+		    config.readMode=0;
+			Set_White(1,2,8,1);
+ 			Set_White(1,3,8,0);
+			index=0;
+		}
+		
+	}
+	//左键短按  进入
+	if(key == left) {
+		Set_White(1,2,8,1);
+ 		Set_White(1,3,8,1);
+		delayms(100);
+		break ;		
+	}
+	//右键短按  返回
+	if(key == right) {
+		return ;		
+	}
+	key=0;
+} //end of while
+ReadSDFile(index,buf);
+CharToStruct();
+while(1){
+	key=kbscan();
+	if(key != 0) beep(0,1);
+	_GUI_datashow(0,page);
+	if( key==left ){ //按left键下一条
+pre_item:
+		if(index < Result.Index){
+		    index++;
+			ReadSDFile(index,buf);
+			CharToStruct();
+			page = 0;
+		}
+		key=0;
+	}
+	if( key==lleft ){ //长按按left键上一条
+next_item:
+		if(index > 0){
+		    index--;
+			ReadSDFile(index,buf);
+			CharToStruct();
+			page = 0;
+		}
+		key=0;
+	}
+	
+	if(key==up){ //上键 : 页面减 
+	    if(page>0) page--;
+	    else goto pre_item;
+		LCD_CLR();
+	    LCD_Init();
+		
+	}
+	if(key==down){ //下键 ： 页面加
+	    if(page<5) page++;
+	  	else goto next_item;
+	    LCD_CLR();
+	    LCD_Init();
+	}
+	if(key==right){	//右键 退出
+	    beep(0,1); 
+	 	LCD_CLR();
+	 	return ;
+	}
+	
+    delayms(30); 
+}//end while
+}
 void GUI_welcome(void){
     LCD_CLR(); //清屏
 	LCD_const_disp(2,3,"欢迎使用");
@@ -490,10 +597,10 @@ void GUI_welcome(void){
 //   将ds1302中缓存的时钟数据转换进结构体中
 ////////////////////////////////////
 void dateRefresh(unsigned char readhardware)
-{	
-	if( readhardware==1 ){
-		ds1302_read_time();
-	}
+{	//readhardware = 0 not refresh, =1 refresh
+	ds1302_read_time();
+	config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //更新系统心跳
+	if( readhardware >=1 ){  
 	t.tm_sec=(((time_buf[6]&0x70)>>4)*10)+(time_buf[6]&0x0f);
 	t.tm_min=  (((time_buf[5]&0x70)>>4)*10)+(time_buf[5]&0x0f);
 	t.tm_hour=  (((time_buf[4]&0x70)>>4)*10)+(time_buf[4]&0x0f);
@@ -521,6 +628,6 @@ void dateRefresh(unsigned char readhardware)
 	Result.Time[8]=t.tm_sec/10+'0';
 	Result.Time[9]=t.tm_sec%10+'0';
 	Result.Time[10]='\0'; 
-	//
-	config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec;
+	}
+	
 }
