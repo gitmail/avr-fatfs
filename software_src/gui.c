@@ -38,10 +38,13 @@ unsigned char GUI_mainmeu( void ){
  	unsigned char key=0; //init= nokey
 	unsigned char select=3;
 	LCD_CLR();
+	
  	Set_White(1,1,8,1);
 	Set_White(1,2,8,1);
 	Set_White(1,3,8,1);
 	Set_White(1,4,8,1);
+	dateRefresh(1); //¸üÐÂÏµÍ³Ê±¼ä
+	LCD_const_disp(1,1,GUI_get_date()); //ÏÔÊ¾Ê±¼ä
 	LCD_const_disp(2,1,"  ¼ì²â  Ê±ÖÓµ÷Õû");
 	LCD_const_disp(3,1,"  ²éÑ¯  Êý¾Ý´«Êä");
 	LCD_const_disp(4,1,"  ³õÊ¼»¯");
@@ -191,29 +194,41 @@ RE_IN:
 		else { //is_on == 0 ·Ç¼ì²â×´Ì¬ ÊÖ¶¯·­Ò³/×Ô¶¯·­Ò³
 		    dateRefresh(0);//²»¸üÐÂÊ±¼ä
 			_GUI_datashow(page); 
-			//ÊÖ¶¯·­Ò³ 
+			if(page == 0 ){
+				
+				    LCD_const_disp(4,1,"Íê³É¼ì²â        ");
+					if(config.autocheck == 1){
+					    LCD_const_disp(4,7,"×Ô¶¯");
+					}
+					else {
+					    LCD_const_disp(4,7,"ÊÖ¶¯");
+					}
+					
+				}
+						//ÊÖ¶¯·­Ò³ 
 			if(key==up){ //ÉÏ¼ü : Ò³Ãæ¼õ 
 		        if(page>0) page--;
-				else page =5;
+				else{
+				page =5;
+				next_step_time = config.now + config.checkDeltaTime;
+				}
 		    	LCD_CLR();
 		    	LCD_Init();
 			}
 			if(key==down){//ÏÂ¼ü £º Ò³Ãæ¼Ó
-		        if(page<5) 
-				    page++;
-		  		else  
-				    page = 0;
-		    	LCD_CLR();
+		        page++;
+				next_step_time = config.now + config.checkDeltaTime;
+		  		LCD_CLR();
 		    	LCD_Init();
-		    }
+			} 	
 			//LCD_print2num(4,1,page);
 			//LCD_print4num(4,3,config.now);
 			//LCD_print4num(4,6,next_step_time);
-			if( config.autocheck == 1){  //Èç¹û¿ªÆô×Ô¶¯·­Ò³
-			      if(config.now >= next_step_time )	{
+			if( config.autocheck == 1 ){  //Èç¹û¿ªÆô×Ô¶¯·­Ò³
+			      if(config.now >= next_step_time || page >=6 )	{
 				      next_step_time = config.now + config.checkDeltaTime;
 					  page++;
-					  if( page==6 ){
+					  if( page>=6 ){
 					      //×Ô¶¯·­µ½×îºóÒ³£¬Ò³ÃæÇåÁã¿ªÆôÏÂ´Î¼ì²â
 					      page = 0;
 						  dateRefresh(1); //Ë¢ÐÂÊ±¼ä
@@ -223,8 +238,12 @@ RE_IN:
 						  Result.WSChar[0]=0;
 					  }
 				      LCD_CLR();      
+					  key=0;
 				  }  
 			}
+
+			
+
 			 
 		} 
 	    delayms(10); 
@@ -330,7 +349,7 @@ void _GUI_datashow(char page){
 	}  //end if
 }
 char * GUI_get_date(void) {  
-  //¸ñÊ½£º2012Äê12ÔÂ11ÈÕ19:00:00
+  //¸ñÊ½£12Äê12ÔÂ11ÈÕ19:00:00
     GUI_date[0]=Result.Date[4]; 
     GUI_date[1]=Result.Date[5];
     GUI_date[4]=Result.Date[6];
@@ -486,7 +505,7 @@ void GUI_set_time(void){
 		break;           
 							 
 		 }//endcase
- 		 dateRefresh(0);
+ 		 dateRefresh(1);
 		 
 		 LCD_const_disp(3,1,"                "); //Çå¿Õ¼ýÍ· 
  		 LCD_var_disp(3,p,ary); //ÏÔÊ¾¼ýÍ· 
@@ -622,9 +641,7 @@ void dateRefresh(unsigned char readhardware)
 	t.tm_mon= (((time_buf[2]&0x70)>>4)*10)+(time_buf[2]&0x0f);
 	t.tm_wday=	(time_buf[7]&0x0f);
     t.tm_year=	(((time_buf[1]&0x70)>>4)*10)+(time_buf[1]&0x0f);
-	config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //¸üÐÂÏµÍ³ÐÄÌø
-	if( readhardware >=1 ){  
-	config.Relay=relay(!config.Relay);
+	if(readhardware != 0){
 	Result.Date[0]='2';
 	Result.Date[1]='0';
 	Result.Date[2]=t.tm_year/10+'0';
@@ -634,6 +651,7 @@ void dateRefresh(unsigned char readhardware)
 	Result.Date[6]=t.tm_mday/10+'0';
 	Result.Date[7]=t.tm_mday%10+'0';
     Result.Date[8]='\0';
+
 	Result.Time[0]=t.tm_hour/10+'0';
 	Result.Time[1]=t.tm_hour%10+'0';
 	Result.Time[2]=':';
@@ -646,5 +664,6 @@ void dateRefresh(unsigned char readhardware)
 	Result.Time[9]=t.tm_sec%10+'0';
 	Result.Time[10]='\0'; 
 	}
+    config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //¸üÐÂÏµÍ³ÐÄÌø
 	
 }

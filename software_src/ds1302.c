@@ -163,6 +163,7 @@ void ds1302_read_time(void)  {
 	time_buf[5]=ds1302_read_byte(ds1302_min_add);		//分 
 	time_buf[6]=(ds1302_read_byte(ds1302_sec_add))&0x7F;//秒，屏蔽秒的第7位，避免超出59
 	time_buf[7]=ds1302_read_byte(ds1302_day_add);		//周 
+	
 }
 
 
