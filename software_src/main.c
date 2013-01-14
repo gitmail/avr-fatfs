@@ -25,9 +25,9 @@ void initDevices(void){
 	 uart1_init();
 	 LCD_INT();delayms(50);LCD_INT();
 	 LCD_SW(1);
-	 config.THRESHOLD_delta_sec=3; //一次检测用时
+	 config.THRESHOLD_delta_sec=60; //一次检测用时
 	 config.autocheck=1;        //自动检测开关
-	 config.checkDeltaTime=5;  //自动检测模式 时间间隔
+	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
 	 config.readMode = 0;      //读数据模式
 	 SEI();
 }

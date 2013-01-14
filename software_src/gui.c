@@ -408,7 +408,7 @@ void GUI_set_time(void){
 		 	  	 		 }
 												   
 					}			   		
-				else if(keyc==right) {i=1;}
+				else if(keyc==left) {i=1;}
 				break;
 		 case 1:p=4;ary=GUI_up;  //月
 		  	  	if(keyc==up){
@@ -428,10 +428,8 @@ void GUI_set_time(void){
 				    else 
 					    time_buf[2]=0x12;						
 				}						 							
+ 								
 				if(keyc==left){
-				    i=0;   
-				}									
-				if(keyc==right){
 				    i=2;   
 				}  
 				break;
@@ -456,8 +454,7 @@ void GUI_set_time(void){
 					 else time_buf[3]=0x31;						
 											   
 				}
-				if(keyc==left) {i=1;  }						 			   		
-				if(keyc==right) {i=3;    }  	
+				if(keyc==left) {i=3;  }						 			   		
 				break;
 		case 3:p=1;ary=GUI_down;
  	  	if(keyc==up){ if(time_buf[4]<0x23){  time_buf[4]++;	
@@ -473,8 +470,7 @@ void GUI_set_time(void){
 												 }
 							 else time_buf[4]=0x23;						
 						  }	
-		if(keyc==left ) {i=2;   } 				  
-		if(keyc==right) {i=4;    } 
+		if(keyc==left) {i=4;    } 
 		break;						  					 			
  case 4:p=3;ary=GUI_down;
  	  	if(keyc==up){ if(time_buf[5]<0x59){  time_buf[5]++;	
@@ -487,8 +483,7 @@ void GUI_set_time(void){
 											}
 						else time_buf[5]=0x59;						
 					  }
-		if(keyc==left ) {i=3;    } 		  						 								  			
- 		if(keyc==right) {i=5;   }	
+		if(keyc==left ) {i=5;    } 		  						 								  			
 		break;			   
  case 5:p=5;ary=GUI_down;
  	  	if(keyc==up){ if(time_buf[6]<0x59){  time_buf[6]++;	
@@ -500,18 +495,17 @@ void GUI_set_time(void){
 						if((time_buf[6]&0x0f)==0x0f) time_buf[6]-=6;
 					  }
 		else time_buf[6]=0x59;		}				
-		if(keyc==left ) {i=4;    } 		  				 														   
-		if(keyc==right) {i=6;p=1;ary=NULL;}  
+		if(keyc==left) {i=6;p=1;ary=NULL;}  
 		break;           
 							 
 		 }//endcase
- 		 dateRefresh(1);
+ 		 dateRefresh(88); //set clock mode
 		 
 		 LCD_const_disp(3,1,"                "); //清空箭头 
  		 LCD_var_disp(3,p,ary); //显示箭头 
  		 LCD_var_disp(2,1,pD);  //显示日期
  		 LCD_var_disp(4,1,pT);  //显示时间
- if(keyc==lright) {		  
+ if(keyc==right) {		  
  		  LCD_const_disp(3,1,"        放弃修改"); 
 		  delayms(500);
 		  LCD_CLR(); //清屏
@@ -633,7 +627,8 @@ void GUI_welcome(void){
 ////////////////////////////////////
 void dateRefresh(unsigned char readhardware)
 {	//readhardware = 0 not refresh, =1 refresh
-	ds1302_read_time();
+
+ if( readhardware!=88 )	ds1302_read_time();
 	t.tm_sec=(((time_buf[6]&0x70)>>4)*10)+(time_buf[6]&0x0f);
 	t.tm_min=  (((time_buf[5]&0x70)>>4)*10)+(time_buf[5]&0x0f);
 	t.tm_hour=  (((time_buf[4]&0x70)>>4)*10)+(time_buf[4]&0x0f);
