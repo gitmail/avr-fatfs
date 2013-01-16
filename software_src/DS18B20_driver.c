@@ -190,32 +190,16 @@ void convert_T(void)
 //------------------------------------------------------------------------------
 float read_T(void)
 {
-    unsigned int value=0;
-	unsigned char sign;
-	
+    unsigned char th=0,tl=0;
 	float tmp;
-    
     if(reset_18B20()){
     	write_byte_18B20(0xcc);
     	write_byte_18B20(0xbe);
     }
     
-    value = (unsigned int)read_byte_18B20();
-    value += ((unsigned int)(read_byte_18B20()))<<8;
-	/*   if((value&0x8000)==0x8000) //负温度
-					{
-					 sign=0;
-					 data=(~data)+1;       //补码形式，取反加一
-					}
-		elae 
-					{
-					 sign=1;
-					}
-		 xiaoshu1=(unsigned char) ((data&0x000f)*10/16);
-		 zhengshu=(unsigned char) (data>>4); 
-		*/
-	tmp= ((float)value)*0.0625;
-	
+    tl = read_byte_18B20();
+    th = read_byte_18B20();
+ 	tmp= ((float)(th<<8|tl))*0.0625;
     return( tmp);
 }
 

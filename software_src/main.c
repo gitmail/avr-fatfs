@@ -263,6 +263,7 @@ void check( void )
  //计算风速
  Result.WindSpeed=WScounter/N_per_Second;
  //温度
+ Result.Temperature=read_T_NUM(1); //读两次 避免出错
  Result.Temperature=read_T_NUM(1);
  //WCI风冷指数
   Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
@@ -273,7 +274,7 @@ void check( void )
 //将数据转换成字符串
  
 ftochr(Result.WindSpeed,Result.WSChar);
-ftochr(Result.Temperature,Result.TempChar);
+ftochr(Result.Temperature,Result.TempChar);//PrintString_n(Result.TempChar);
 ftochr(Result.WCI,Result.WCIChar);
 ftochr(Result.ECT,Result.ECTChar);
 ftochr(Result.Teq,Result.TeqChar);

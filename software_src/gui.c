@@ -94,6 +94,12 @@ void GUI_check(void){
 	unsigned long next_step_time=0;
 	char selectCheckMode=config.autocheck; //自动检测开关
 RE_IN:
+	key=0;
+	page=0;
+	is_on=0;
+	windcounter=0;
+	next_step_time=0;
+	
 	dateRefresh(1);
 	LCD_CLR();
 	LCD_const_disp(1,1,"菜单/ 检测");
