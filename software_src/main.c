@@ -25,9 +25,9 @@ void initDevices(void){
 	 uart1_init();
 	 LCD_INT();delayms(50);LCD_INT();
 	 LCD_SW(1);
-	 config.THRESHOLD_delta_sec=60; //一次检测用时
+	 config.THRESHOLD_delta_sec=5; //一次检测用时
 	 config.autocheck=1;        //自动检测开关
-	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
+	 config.checkDeltaTime=3;  //自动检测模式 时间间隔
 	 config.readMode = 0;      //读数据模式
 	 SEI();
 }
@@ -43,12 +43,17 @@ void timer1_init(void)
 void main(void){
 	 UINT8 tmp,keycode;
 	 UINT8 buf512[513];
-	 char filename[]="201302.xls\0\0\0";
+	 char filename[]="201301.xls\0\0\0";
 	 int i=0;
 	 initDevices();
 	 dateRefresh(1);
 	 WriteFileHead();
      Result.Index=findIndex(get_name(filename),buf512);
+	 #ifdef _DBG_RD_
+	 	 while(1){
+		     GUI_readback(buf512);
+	     }
+	 #endif
 	 //selfTest();
 	 GUI_welcome();
 	 while(1){
@@ -99,6 +104,7 @@ void selfTest(void){
 	lp("完成自检");delayms(500);
 	  
 }
+
 void WriteFileHead(void)   
 {
  	 unsigned int bw;
@@ -144,7 +150,7 @@ void WriteSDFile(void)
 	res = f_open(&file,get_name(fnamep), FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
 	lenth=file.fsize;   
 	res = f_lseek (&file,lenth);	 
-	res = f_write(&file,TempChar,64,&bw);   //bw 已写入字节数
+	res = f_write(&file,TempChar,SINGLE_ITEM_SIZE,&bw);   //bw 已写入字节数
 	f_close(&file);
 	f_mount(0, NULL);
 }
@@ -153,18 +159,19 @@ void WriteSDFile(void)
 //以64byte为一块 读取
 //index数据偏移量   data读出后存放地
 //////////////////////////////////////////////// 
-char ReadSDFile(unsigned int index,char *data)
+char ReadSDFile(char *fnamep,int index, char *data, char mode)
 {
  	unsigned int bw;
 	char res;
 	FATFS fs;
     FIL file;
-	char fnamep[13];
-    get_name(fnamep); 
-    disk_initialize(0);
+	static int indexoffset;
+	unsigned int max;
+	disk_initialize(0);
     res = f_mount(0, &fs);
     res = f_open(&file,fnamep,FA_READ);  
-    if(res==FR_NO_FILE) {data=NULL;
+    if(res==FR_NO_FILE) {
+	data=NULL;
     #if _debug >= 1 
     debug_out("now file",255);
 	debug_out(filename,res);
@@ -172,8 +179,21 @@ char ReadSDFile(unsigned int index,char *data)
     #endif 
     return res;
     }   
-    res = f_lseek (&file,(index+2)*64);	 //前两个字节数据为文件头空间 所以从第三块读/写起
-    res = f_read(&file,data,64,&bw);
+    max = (file.fsize-128)/SINGLE_ITEM_SIZE;
+	if(mode == 0){ //绝对位置模式
+		indexoffset = index;
+	}
+	else if(mode == 1){ //位置偏移模式
+		indexoffset+=index;
+	}
+	if(indexoffset >max){
+	    indexoffset = max;
+	}
+	else if(indexoffset <=0){
+		indexoffset = 1;
+	}
+	res = f_lseek (&file,(indexoffset-1)*SINGLE_ITEM_SIZE+128);	 //前两个字节数据为文件头空间 所以从第三块读/写起
+    res = f_read(&file,data,SINGLE_ITEM_SIZE,&bw);
     f_close(&file);
 	f_mount(0, NULL);
 	return res;
@@ -248,6 +268,53 @@ unsigned int findIndex(char *filename,char *buf){
 	//debug("index=",0X00);
 	//PrintLong(index+1);
 	return index+1;
+}
+////////////////////////////////////////////////
+//			文件查找函数
+//
+////////////////////////////////////////////////
+char scan_files (char* path)
+{
+    FRESULT res;
+    FILINFO fno;
+    DIR dir;
+    int i;
+    char *fn;
+#if _USE_LFN   //长文件名支持
+    static char lfn[_MAX_LFN * (_DF1S ? 2 : 1) + 1];
+    fno.lfname = lfn;
+    fno.lfsize = sizeof(lfn);
+#endif
+    res = f_opendir(&dir, path); //打开文件夹
+    if (res == FR_OK) {PrintString_n("opendir ok");
+        i = strlen(path);
+        for (;;) {
+            res = f_readdir(&dir, &fno);
+			debug("read addr",res);debug(fno.fname,255);
+            if (res != FR_OK || fno.fname[0] == 0){ debug("break",255);break; }
+#if _USE_LFN
+            fn = *fno.lfname ? fno.lfname : fno.fname;
+#else
+            fn = fno.fname;
+#endif
+	  		PrintString_n("aaa");
+            if (*fn == '.') continue;
+           /* if (fno.fattrib & AM_DIR) {
+                sprintf(&path[i], "/%s", fn);PrintString_n(fn);
+                res = scan_files(path);
+                if (res != FR_OK) break;
+                path[i] = 0;
+            } else {
+                PrintString_n(path);
+				PrintString_n(fn);
+            }
+			*/
+			PrintString_n(path);
+			PrintString_n(fn);
+        }
+    }
+
+    return res;
 }
 void check( void )
 {
@@ -343,30 +410,57 @@ void  StructToChar(void)
  
   strcat(TempChar,otherbyte);  
   strcat(TempChar,enter);  
-  strcat(TempChar,"\0\0");
+  strcat(TempChar,"\0");
 }
 
 //////////////////////////////////////////////////////
 //               字符串  变  结构体
 // 
 ///////////////////////////////////////////////////////
-void CharToStruct(void)
+void CharToStruct(char *buf)
 {
-  unsigned char i=0,j=0;
+  unsigned char j=0;
   unsigned char *p,*q;
   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
 				Result.TeqChar
 			   };  //指向数组首地址的指针
-  char Temp_Char[80];
     p=ary[j];
-	q=Temp_Char;
+	q=buf;
+	
 	while(1){
     if(*q =='\n') {*p='\0'; return;} ;
-	if(*q =='\t') {j++;p=ary[j];i=0;}
+	if(*q =='\t') {
+		*p='\0';
+		q++;
+	    if(j>7) break ;
+		j++;
+		p=ary[j];
+		continue ;
+	}
+	//Usart_Transmit('-');
+	//Usart_Transmit(*q);
+	//Usart_Transmit(']');
+	//PrintChar(*q);
+	//Usart_Transmit('+');
     *p++=*q++;
 	}
-  }
+	/* for debug
+	PrintString_n(Result.IndexChar);
+	PrintString_n(Result.Date);
+	PrintString_n(Result.Time);
+	PrintString_n(Result.TempChar);
+	PrintString_n(Result.WSChar);
+	PrintString_n(Result.WCIChar);
+	PrintString_n(Result.ECTChar);
+	PrintString_n(Result.TeqChar);
+	Result.WeiHai=*(q+1)-0x30;
+	Result.LowLabor=*(q+3)-0x30;
+	Result.MidLabor=*(q+5)-0x30;
+	Result.HighLabor=*(q+7)-0x30;
+	*/
+	return ;
+}
  
  ////////////////////////////////////////////
 //				根据当前日期获取文件名

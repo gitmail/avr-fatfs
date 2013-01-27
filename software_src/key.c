@@ -15,8 +15,10 @@ unsigned char kbscan(void)
         while((KEY_PIN) != KEY_MASK)
 		{
 		 temp++ ;
-		 if(temp>LONGKEY) 
-		 {  return key+0x80;  };
+		 if(temp>LONGKEY) {  
+		     delayms(30);
+			 return key+0x80;  
+		 };
 		}
 		; //当前有按键处于按下状态，再按其他按键时程序维持当前状态 
       	

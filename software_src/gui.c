@@ -260,10 +260,10 @@ void _GUI_datashow(char page){
  	//ÏÔÊ¾ÈÕÆÚÊ±¼ä
 	    LCD_var_disp(1,1,GUI_get_date());
 	//ÏÔÊ¾ÎÂ¶È
-	 	LCD_const_disp(2,1,"ÎÂ¶È (¡æ):");
+	 	LCD_const_disp(2,1,"ÎÂ¶È (¡æ):      ");
 	 	LCD_var_disp(2,6,Result.TempChar);
 	//ÏÔÊ¾·çËÙ
-	    LCD_const_disp(3,1,"·çËÙ(m/s): ");
+	    LCD_const_disp(3,1,"·çËÙ(m/s):      ");
 	 	LCD_const_disp(3,6,Result.WSChar);
 
 	 } 
@@ -355,7 +355,7 @@ void _GUI_datashow(char page){
 	}  //end if
 }
 char * GUI_get_date(void) {  
-  //¸ñÊ½£12Äê12ÔÂ11ÈÕ19:00:00
+  //¸ñÊ½:12ÔÂ11ÈÕ19:00:00
     GUI_date[0]=Result.Date[4]; 
     GUI_date[1]=Result.Date[5];
     GUI_date[4]=Result.Date[6];
@@ -531,92 +531,155 @@ void GUI_set_time(void){
 void GUI_readback(char *buf){
     char key=0;
 	char page=0;
-	long index=Result.Index;
+	char res=0;
+	char file_buf[]="201201.xls\0\0";
 	LCD_CLR(); //ÇåÆÁ
-	LCD_const_disp(1,1,"²Ëµ¥/ ¼ì²â");
-    LCD_const_disp(2,3,"×îºóÒ»´Î");		 
-	LCD_const_disp(3,3,"°´Ë³Ğò");
-	//<<²Ëµ¥/¼ì²â/ÊÖ£¨×Ô£©¶¯>>
-while(1){
- 	key=kbscan();
-	//ÉÏ¼ü¶Ì°´ Ñ¡Ôñ
-	if(key==up || key ==down){
-	    if(config.readMode == 0){
-		    config.readMode=1;
-			Set_White(1,2,8,0);
- 			Set_White(1,3,8,1);
-			index=Result.Index;	
-		}
-		else {
-		    config.readMode=0;
-			Set_White(1,2,8,1);
- 			Set_White(1,3,8,0);
-			index=0;
-		}
-		
+	//1 ¼ì²âSD×´Ì¬
+		//ÎŞSD¿¨ ÏÔÊ¾ÎŞ¿¨ ÍË³ö
+	if((SD_DET()==0)) {
+		LCD_const_disp(2,1,"Î´¼ì²âµ½SD¿¨..");
+			#ifdef _DBG_RD_
+		   PrintString_n("not find sd");
+		   #endif
+		delayms(500);
+		return ;
 	}
-	//×ó¼ü¶Ì°´  ½øÈë
-	if(key == left) {
-		Set_White(1,2,8,1);
- 		Set_White(1,3,8,1);
-		delayms(100);
-		break ;		
+	//2 ÏÔÊ¾µ±Ç°ÔÂ·İ
+	get_name(file_buf);
+	LCD_const_disp(1,1,"²éÕÒÊı¾İ:");
+	LCD_const_disp(2,2,file_buf);
+	#ifdef _DBG_RD_
+		   PrintString_n(file_buf);
+	#endif
+	//3 ²éÕÒÎÄ¼şÊÇ·ñ´æÔÚ
+		//´æÔÚ-> ½øÈë¶ÁÈ¡Ë³ĞòµÄÑ¡Ôñ
+		//²»´æÔÚ -> Ñ¯ÎÊ²éÕÒÉÏÔÂ
+	//4 Ñ¡Ôñ ²éÑ¯Ë³Ğò
+		//¼ÆËã×ÜÌõÊı
+		//Ë³Ğò ÔöÁ¿Îª1£¬ ²éÑ¯µÚÒ»Ìõ 
+		//ÄæĞò ÔöÁ¿Îª-1£¬²éÑ¯×îºóÒ»Ìõ
+	//5 ¶ÁÈ¡	
+	//6 ÏÔÊ¾
+	//7 ÉÏÒ»Ìõ ÏÂÒ»Ìõ  ÍË³ö
+		//ÉèÖÃÌõÊı ÅĞ¶Ï±ß½ç ½øÈë5
+		//ÍË³ö ·µ»ØÖ÷³ÌĞò	
+	//!!res=checkFile(file_buf);
+	LCD_CLR(); //ÇåÆÁ
+	if(res == 0){ //ÕÒµ½²¢ÒÑ¾­È·ÈÏÎÄ¼ş
+		   LCD_const_disp(1,1,"²Ëµ¥/ ¼ì²â");
+   		   LCD_const_disp(2,3,"°´Ë³Ğò");
+		   LCD_const_disp(3,3,"×îºóÒ»´Î");		 
+	       if(config.readMode == READ_MODE_LAST){
+		       config.readMode=READ_MODE_FIRST;
+			   Set_White(1,2,8,0);
+ 			   Set_White(1,3,8,1);
+		  }
+		  else {
+		       config.readMode=READ_MODE_LAST;
+			   Set_White(1,2,8,1);
+ 			   Set_White(1,3,8,0);
+		 }
+		   //<<²Ëµ¥/¼ì²â/ÊÖ£¨×Ô£©¶¯>>
+		   while(1){
+ 		       key=kbscan();
+			   //ÉÏ¼ü¶Ì°´ Ñ¡Ôñ
+			   if(key==up || key ==down){
+	    	       if(config.readMode == READ_MODE_LAST){
+		    	       config.readMode=READ_MODE_FIRST;
+					   Set_White(1,2,8,0);
+ 					   Set_White(1,3,8,1);
+				   }
+				   else {
+		    	       config.readMode=READ_MODE_LAST;
+					   Set_White(1,2,8,1);
+ 					   Set_White(1,3,8,0);
+				   }
+				}      
+				//×ó¼ü¶Ì°´  ½øÈë
+				if(key == left) {
+				Set_White(1,2,8,1);
+ 				Set_White(1,3,8,1);
+				delayms(100);
+				break ;		
+				}
+				//ÓÒ¼ü¶Ì°´  ·µ»Ø
+				if(key == right) {
+				return ;		
+				}
+				key=0;
+		    } //end of while
+			if(config.readMode==READ_MODE_LAST){
+			    ReadSDFile(file_buf,65535,buf,0); //×îºóÒ»Ìõ
+			}
+			else {
+			    ReadSDFile(file_buf,1,buf,0); //¶ÁµÚÒ»Ìõ
+			}
+			CharToStruct(buf);      //×ª»»
+			while(1){
+			    key=kbscan();     //¼üÅÌÉ¨Ãè
+				if(key != 0) beep(0,1);
+				//dateRefresh(0);  //Ë¢ĞÂ
+				_GUI_datashow(page); //ÏÔÊ¾
+				if( key==left ){ //°´left¼üÏÂÒ»Ìõ
+					next_item:  //ÏÂÒ»Ìõ
+				    ReadSDFile(file_buf,1,buf,1); //Æ«ÒÆµ½ÏÂÒ»Ìõ
+					CharToStruct(buf);
+					page = 0;
+					key=0;
+				}
+				if( key==lleft ){ //³¤°´°´left¼üÉÏÒ»Ìõ
+		    	    pre_item: //ÉÏÒ»Ìõ
+					ReadSDFile(file_buf,-1,buf,1); //Æ«ÒÆµ½ÉÏÒ»Ìõ
+					CharToStruct(buf);
+					page = 0;
+					key=0;
+				}
+				if(key==up){ //ÉÏ¼ü : Ò³Ãæ¼õ 
+	    		     if(page>0) page--;
+	    			 else goto pre_item;
+					 LCD_CLR();
+	    			 LCD_Init();
+    			}
+				if(key==lup){ //³¤°´ÉÏ¼ü : -10 Ìõ 
+	    		     ReadSDFile(file_buf,-10,buf,1); //Æ«ÒÆµ½ÏÂ10Ìõ
+					 CharToStruct(buf);
+					 page = 0;
+					 key=0;
+					 LCD_CLR();
+	    			 LCD_Init();
+    			}
+				if(key==down){ //ÏÂ¼ü £º Ò³Ãæ¼Ó
+	    		    if(page<5) page++;
+	  				else goto next_item;
+	    			LCD_CLR();
+	    			LCD_Init();
+				}
+				if(key==ldown){ //³¤°´ÏÂ¼ü £º Ò³Ãæ¼Ó10Ìõ
+	    		    ReadSDFile(file_buf,10,buf,1); //Æ«ÒÆµ½ÏÂ10Ìõ
+					CharToStruct(buf);
+					page = 0;
+					key = 0;
+	    			LCD_CLR();
+	    			LCD_Init();
+				}
+				if(key==right){	//ÓÒ¼ü ÍË³ö
+	    		    beep(0,1); 
+	 				LCD_CLR();
+	 				return ;
+				}
+				if(page == 0 ){
+				    LCD_const_disp(4,1,"ID:         ");
+					LCD_const_disp(4,3,Result.IndexChar);
+				}
+    			delayms(30); 
+		 }//end while
+		   
 	}
-	//ÓÒ¼ü¶Ì°´  ·µ»Ø
-	if(key == right) {
-		return ;		
+	else { //Î´ÕÒµ½»òÎ´È·ÈÏÎÄ¼ş
+		 //ÄæĞò²éÕÒÎÄ¼ş£¬Ö±µ½ÔÂ·İĞ¡ÓÚ 200001.xls
+		 //»òÊÇÊÖ¹¤È·ÈÏµÄ·½Ê½
 	}
-	key=0;
-} //end of while
-ReadSDFile(index,buf);
-CharToStruct();
-while(1){
-	key=kbscan();
-	if(key != 0) beep(0,1);
-	dateRefresh(0);
-	_GUI_datashow(page);
-	if( key==left ){ //°´left¼üÏÂÒ»Ìõ
-pre_item:
-		if(index < Result.Index){
-		    index++;
-			ReadSDFile(index,buf);
-			CharToStruct();
-			page = 0;
-		}
-		key=0;
-	}
-	if( key==lleft ){ //³¤°´°´left¼üÉÏÒ»Ìõ
-next_item:
-		if(index > 0){
-		    index--;
-			ReadSDFile(index,buf);
-			CharToStruct();
-			page = 0;
-		}
-		key=0;
-	}
-	
-	if(key==up){ //ÉÏ¼ü : Ò³Ãæ¼õ 
-	    if(page>0) page--;
-	    else goto pre_item;
-		LCD_CLR();
-	    LCD_Init();
-		
-	}
-	if(key==down){ //ÏÂ¼ü £º Ò³Ãæ¼Ó
-	    if(page<5) page++;
-	  	else goto next_item;
-	    LCD_CLR();
-	    LCD_Init();
-	}
-	if(key==right){	//ÓÒ¼ü ÍË³ö
-	    beep(0,1); 
-	 	LCD_CLR();
-	 	return ;
-	}
-	
-    delayms(30); 
-}//end while
+
 }
 void GUI_welcome(void){
     LCD_CLR(); //ÇåÆÁ
