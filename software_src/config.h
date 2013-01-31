@@ -3,7 +3,7 @@
 //debug选项
 #define _DEBUG
 //#define _LCDDEBUG
-//#define _UARTDEBUG
+#define _UARTDEBUG
 //#define _DBG_RD_
 //类型定义
 #define INT8   char
@@ -59,7 +59,7 @@ struct DATA {
    float    WindSpeed ;
    char  WSChar[5]    ;
    float    WCI ;   //风冷指数
-   char  WCIChar[6]   ;
+   char  WCIChar[8]   ;
    float    ECT ;   //等价制冷温度
    char  ECTChar[6]   ;
    float    Teq ;	//相当温度
@@ -80,11 +80,14 @@ struct DATA {
 		char autocheck;
 		int checkDeltaTime;
 		char readMode; //0=最后一次 1=按顺序d
+		char heatThreshold;
 		
   };
  #define READ_MODE_LAST 0
  #define READ_MODE_FIRST 1  
-    
+ #define INSIDE_SENSOR 0
+ #define OUTSIDE_SENSOR 1
+  
  struct tm {
    	int tm_sec;   // 秒 seconds after the minute, 0 to 60
    	int tm_min;   // 分 minutes after the hour, 0 to 59

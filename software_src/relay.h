@@ -7,7 +7,7 @@
 #define _RELAY_H_
 #include "config.h"
 //设定加热器开启阈值电压
-#define HEAT_THRESHOLD 5
+
 
 
 #define RELAY_PORT 		  PORTC

@@ -35,6 +35,7 @@ void          write_byte_18B20(unsigned char data);  //写一字节到18B20
 unsigned char read_18B20(void);             									//读一字节到18B20
 float read_T(void);
 float read_T_NUM(unsigned char NUM);
+float readWithoutDelay(unsigned char NUM);
 //------------------------------------------------------------------------------
 // 功能函数声明 (针对单个器件)
 //------------------------------------------------------------------------------

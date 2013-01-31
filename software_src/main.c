@@ -25,10 +25,12 @@ void initDevices(void){
 	 uart1_init();
 	 LCD_INT();delayms(50);LCD_INT();
 	 LCD_SW(1);
-	 config.THRESHOLD_delta_sec=5; //一次检测用时
+	 config.THRESHOLD_delta_sec=60; //一次检测用时
 	 config.autocheck=1;        //自动检测开关
-	 config.checkDeltaTime=3;  //自动检测模式 时间间隔
+	 config.heatThreshold = 5; //继电器开启温度 
+	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
 	 config.readMode = 0;      //读数据模式
+	 
 	 SEI();
 }
 void timer1_init(void)
@@ -49,15 +51,6 @@ void main(void){
 	 dateRefresh(1);
 	 WriteFileHead();
      Result.Index=findIndex(get_name(filename),buf512);
-	 while(1){
-	  		dateRefresh(1);
-	 		check();
-			StructToChar(); //转成字符串
-			WriteFileHead();//重写文件头
-			WriteSDFile();  //写入sd卡
-			//zigbee_send(); //发送
-			Result.Index++; //索引自增一
-	 }
 	 #ifdef _DBG_RD_
 	 	 while(1){
 		     GUI_readback(buf512);
@@ -75,9 +68,26 @@ void main(void){
 			case 7 : selfTest(); break ;
 			default : break;
 	   }
+	   heaterSwitch();
 	   delayms(100);
 	 }
-
+}
+void heaterSwitch(void)
+{
+ static unsigned long last=0;
+ float temp;
+ if(config.now>last)
+ {   
+ 	 last=config.now+5;
+     temp= readWithoutDelay(INSIDE_SENSOR);
+     if (temp>config.heatThreshold) {
+ 	     RELAY_OFF(); debug("off=",(int)temp);
+		 return ;
+ 	  }
+      else  {
+   	     RELAY_ON();debug("on=",(int)temp);
+ 	  } 
+}
 }
 void selfTest(void){
 	float tmp=0;                                                                
@@ -86,14 +96,14 @@ void selfTest(void){
 	 //自检程序
 	lp("自检程序");delayms(500);
 	lp("外部温度 ");
-	tmp=read_T_NUM(0);
-	ftochr(tmp,str1);
+	tmp=read_T_NUM(OUTSIDE_SENSOR);
+	sprintf(str1,"%0.1f",tmp);
 	str1[6]=0;
 	lp(str1);
 	delayms(500);
 	lp("内部温度");
-	tmp=read_T_NUM(1);
-	ftochr(tmp,str2);
+	tmp=read_T_NUM(INSIDE_SENSOR);
+	sprintf(str2,"%0.1f",tmp);
 	str2[6]=0;
 	lp(str2);
 	delayms(500);
@@ -278,53 +288,15 @@ unsigned int findIndex(char *filename,char *buf){
 	//PrintLong(index+1);
 	return index+1;
 }
-////////////////////////////////////////////////
-//			文件查找函数
-//
-////////////////////////////////////////////////
-char scan_files (char* path)
-{
-    FRESULT res;
-    FILINFO fno;
-    DIR dir;
-    int i;
-    char *fn;
-#if _USE_LFN   //长文件名支持
-    static char lfn[_MAX_LFN * (_DF1S ? 2 : 1) + 1];
-    fno.lfname = lfn;
-    fno.lfsize = sizeof(lfn);
-#endif
-    res = f_opendir(&dir, path); //打开文件夹
-    if (res == FR_OK) {PrintString_n("opendir ok");
-        i = strlen(path);
-        for (;;) {
-            res = f_readdir(&dir, &fno);
-			debug("read addr",res);debug(fno.fname,255);
-            if (res != FR_OK || fno.fname[0] == 0){ debug("break",255);break; }
-#if _USE_LFN
-            fn = *fno.lfname ? fno.lfname : fno.fname;
-#else
-            fn = fno.fname;
-#endif
-	  		PrintString_n("aaa");
-            if (*fn == '.') continue;
-           /* if (fno.fattrib & AM_DIR) {
-                sprintf(&path[i], "/%s", fn);PrintString_n(fn);
-                res = scan_files(path);
-                if (res != FR_OK) break;
-                path[i] = 0;
-            } else {
-                PrintString_n(path);
-				PrintString_n(fn);
-            }
-			*/
-			PrintString_n(path);
-			PrintString_n(fn);
-        }
-    }
-
-    return res;
+float Round(float x){
+    x=x*10;
+	if(x >=0) x+=0.5;
+	else x-=0.5;
+	x=(int)x;
+	x=x/10.0;
+	return x;
 }
+
 void check( void )
 {
  unsigned char tmp;
@@ -338,39 +310,35 @@ void check( void )
  SEI();
  //计算风速
  Result.WindSpeed=WScounter/N_per_Second;
-  Result.WindSpeed=1.1;
- //温度
- Result.Temperature=read_T_NUM(1); //读两次 避免出错
- Result.Temperature=read_T_NUM(1);
-  Result.Temperature=-24.1;
+ //四舍五入
+ Result.WindSpeed=Round(Result.WindSpeed);
+ Result.WindSpeed=1.0;
+  //温度
+ Result.Temperature=read_T_NUM(OUTSIDE_SENSOR); //读两次 避免出错
+ Result.Temperature=read_T_NUM(OUTSIDE_SENSOR);
+ //四舍五入
+ Result.Temperature=Round(Result.Temperature);
  //WCI风冷指数
   Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
  //ECT等价制冷温度
- Result.ECT = 33 - 0.01085 * Result.WCI;
+ Result.ECT=33.0f - 0.01085f*Result.WCI;
  //TEQ 相当温度
  Result.Teq = Result.Temperature +( (Result.Temperature -36)/10 ) * Result.WindSpeed ;
 //将数据转换成字符串
-/* 
-ftochr(Result.WindSpeed,Result.WSChar);
-ftochr(Result.Temperature,Result.TempChar);//PrintString_n(Result.TempChar);
-ftochr(Result.WCI,Result.WCIChar);
-ftochr(Result.ECT,Result.ECTChar);
-ftochr(Result.Teq,Result.TeqChar);
-itoa(Result.IndexChar,Result.Index,10);
-*/
-sprintf(Result.WSChar, "%f", Result.WindSpeed);
-sprintf(Result.TempChar, "%f", Result.Temperature);//PrintString_n(Result.TempChar);
-sprintf(Result.WCIChar, "%f",  Result.WCI);
-sprintf(Result.ECTChar, "%0.1f", Result.ECT);
-sprintf(Result.TeqChar, "%0.1f", Result.Teq);
+sprintf(Result.WSChar, "%0.1lf", Result.WindSpeed);
+sprintf(Result.TempChar, "%0.1lf", Result.Temperature); //PrintString_n(Result.TempChar);
+sprintf(Result.WCIChar, "%0.1lf",  Result.WCI); //PrintString_n(Result.WCIChar);
+sprintf(Result.ECTChar, "%0.1lf", Result.ECT);  //PrintString_n(Result.ECTChar);
+sprintf(Result.TeqChar, "%0.1lf", Result.Teq);
 sprintf(Result.IndexChar, "%d", Result.Index);
 Result.TempChar[6]='\0';
 Result.WSChar[5]='\0';
-Result.WCIChar[6]='\0';
+Result.WCIChar[7]='\0';
 Result.ECTChar[6]='\0';
 Result.TeqChar[6]='\0';
  return ;
 }
+/*
 ////////////////////////////////////////////
 //				字符串转换函数
 //   浮点 到  字符串
@@ -402,6 +370,7 @@ for(i=0;i <lenth;i++)
 void itochr(int a,char * dest){ //int to ascii
 	 itoa(dest,a,10); 
 }
+*/
 //////////////////////////////////////////////////////
 //                  结构体 变字符串
 // 将目前存于结构体的数据转换到Temp_Char中。

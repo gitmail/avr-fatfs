@@ -212,6 +212,15 @@ delayms(800);
 ttemp=read_T();
 return ttemp;
 }
+float readWithoutDelay(unsigned char NUM)
+{
+float ttemp;
+if ( NUM >1) return 123.45;
+T_NUM=NUM;//设置访问器件
+ttemp=read_T();
+convert_T();//温度转换
+return ttemp;
+}
 
 
 //-----------------------------------------------------------------------------

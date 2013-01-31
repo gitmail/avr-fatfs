@@ -57,6 +57,7 @@ unsigned char GUI_mainmeu( void ){
 	{
 	 	key=kbscan();
 		dateRefresh(1); //更新系统时间
+		heaterSwitch();
 		LCD_const_disp(1,1,GUI_get_date()); //显示时间
 		if((select>3) && ( key==up ) ){
 		 Set_White(1,2,8,1);
@@ -117,6 +118,7 @@ RE_IN:
 //<<菜单/检测/手（自）动>>
 	while(1){
 	 	key=kbscan();
+		heaterSwitch();
 		//上键短按 选择
 		if(key==up || key ==down){
 		    if(selectCheckMode >0){
@@ -152,6 +154,7 @@ RE_IN:
 	Result.WSChar[0]=0;
 	while(1){
 		key=kbscan();
+		heaterSwitch();
 		if(key != 0) beep(0,1);
 		if(key==right){	//右键 退出
 		    is_on=0;
@@ -167,8 +170,8 @@ RE_IN:
 		 	goto RE_IN;
 		}
 		if(is_on==1){ 
-			dateRefresh(1); 
-		    _GUI_datashow(page); //更新时间
+			dateRefresh(1); //更新时间
+		    _GUI_datashow(page); 
 		    if(config.now < config.time1) {
 				//时间更新 开启风速检测 等待检测 不支持翻页
 				if(windcounter==0){
@@ -186,6 +189,8 @@ RE_IN:
 			else {
 			   //检测完成 获得数据 转换数据 存储数据 切换到非检测状态
 			    windcounter =0 ; //关闭风速传感器计数器
+				beep(1,1);
+				LCD_const_disp(4,1,"--计算并存储--       ");
 				check();
 				StructToChar(); //转成字符串
 				WriteFileHead();//重写文件头
@@ -388,6 +393,7 @@ void GUI_set_time(void){
 	delayms(250);
 	while(1){
 	    keyc=kbscan();
+		heaterSwitch();
 		pD[2]=Result.Date[2];
 		pD[3]=Result.Date[3];
 		pD[6]=Result.Date[4];
@@ -588,6 +594,7 @@ void GUI_readback(char *buf){
 		   //<<菜单/检测/手（自）动>>
 		   while(1){
  		       key=kbscan();
+			   heaterSwitch();
 			   //上键短按 选择
 			   if(key==up || key ==down){
 	    	       if(config.readMode == READ_MODE_LAST){
@@ -623,6 +630,7 @@ void GUI_readback(char *buf){
 			CharToStruct(buf);      //转换
 			while(1){
 			    key=kbscan();     //键盘扫描
+				heaterSwitch();
 				if(key != 0) beep(0,1);
 				//dateRefresh(0);  //刷新
 				_GUI_datashow(page); //显示
@@ -674,7 +682,7 @@ void GUI_readback(char *buf){
 	 				return ;
 				}
 				if(page == 0 ){
-				    LCD_const_disp(4,1,"ID:         ");
+				    LCD_const_disp(4,1,"ID:             ");
 					LCD_const_disp(4,3,Result.IndexChar);
 				}
     			delayms(30); 

@@ -17,7 +17,7 @@ void relay_init(void){
 */
 unsigned char  relay(int temp)
 {
-	if(temp<HEAT_THRESHOLD)
+	if(temp<config.heatThreshold)
 	{
 	 		RELAY_DDR_SET();
 			RELAY_ON();
