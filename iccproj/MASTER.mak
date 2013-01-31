@@ -2,11 +2,11 @@ CC = iccavr
 LIB = ilibw
 CFLAGS =  -e -D__ICC_VERSION=722 -DATMega128  -l -g -MLongJump -MHasMul -MEnhanced -Wf-use_elpm 
 ASFLAGS = $(CFLAGS) 
-LFLAGS =  -g -e:0x20000 -ucrtatmega.o -bfunc_lit:0x8c.0x20000 -dram_end:0x10ff -bdata:0x100.0x10ff -dhwstk_size:30 -beeprom:0.4096 -fihx_coff -S2
+LFLAGS =  -g -e:0x20000 -ucrtatmega.o -bfunc_lit:0x8c.0x20000 -dram_end:0x10ff -bdata:0x100.0x10ff -dhwstk_size:256 -beeprom:0.4096 -fihx_coff -S2
 FILES = diskio.o ff.o delay.o main.o sd.o gui.o usart.o SPI.o lcd.o relay.o beep.o DS18B20_driver.o ds1302.o key.o 
 
 MASTER:	$(FILES)
-	$(CC) -o MASTER $(LFLAGS) @MASTER.lk   -lcatm128
+	$(CC) -o MASTER $(LFLAGS) @MASTER.lk   -lfpatm128 -lcatm128
 diskio.o: .\..\software_src\diskio.h .\..\software_src\integer.h .\..\software_src\sd.h .\..\software_src\config.h .\..\..\..\PROGRA~1\icc\include\iom128v.h D:\PROGRA~1\icc\include\stdio.h D:\PROGRA~1\icc\include\stdarg.h D:\PROGRA~1\icc\include\_const.h D:\PROGRA~1\icc\include\stdlib.h D:\PROGRA~1\icc\include\limits.h D:\PROGRA~1\icc\include\string.h D:\PROGRA~1\icc\include\macros.h D:\PROGRA~1\icc\include\AVRdef.h .\..\software_src\main.h .\..\software_src\SPI.h .\..\software_src\ff.h .\..\software_src\ffconf.h .\..\software_src\usart.h .\..\software_src\delay.h .\..\software_src\lcd.h .\..\software_src\beep.h .\..\software_src\relay.h .\..\software_src\DS18B20_driver.h .\..\software_src\ds1302.h .\..\software_src\key.h .\..\software_src\gui.h .\..\software_src\powercheck.h
 diskio.o:	..\software_src\diskio.c
 	$(CC) -c $(CFLAGS) ..\software_src\diskio.c

@@ -362,10 +362,10 @@ char * GUI_get_date(void) {
     GUI_date[5]=Result.Date[7];
     GUI_date[8]=Result.Time[0];
     GUI_date[9]=Result.Time[1];
-    GUI_date[11]=Result.Time[4];
-    GUI_date[12]=Result.Time[5];
-    GUI_date[14]=Result.Time[8];
-    GUI_date[15]=Result.Time[9];
+    GUI_date[11]=Result.Time[3];
+    GUI_date[12]=Result.Time[4];
+    GUI_date[14]=Result.Time[6];
+    GUI_date[15]=Result.Time[7];
     GUI_date[16]='\0';
     return GUI_date;
 }
@@ -379,7 +379,7 @@ void GUI_set_time(void){
 	unsigned char i=0,keyc=NO_KEY;
 	LCD_CLR(); //清屏
 	pD="2012年12月31日\0";
-	pT=Result.Time;
+	pT="12: 30: 59\0";
 	LCD_const_disp(1,1,"时间设置:       ");
 	LCD_const_disp(4,7,"保存");
 	LCD_var_disp(3,p,ary);
@@ -394,7 +394,13 @@ void GUI_set_time(void){
 		pD[7]=Result.Date[5];
 		pD[10]=Result.Date[6];
 		pD[11]=Result.Date[7];  
-
+		pT[0] = Result.Time[0];
+		pT[1] = Result.Time[1];
+		pT[4] = Result.Time[3];
+		pT[5] = Result.Time[4];
+		pT[8] = Result.Time[6];
+		pT[9] = Result.Time[7];
+		
 		switch(i){
             case 0: p=2;ary=GUI_up;  //年
 		 	  	 if(keyc==up){
@@ -719,14 +725,14 @@ void dateRefresh(unsigned char readhardware)
 	Result.Time[0]=t.tm_hour/10+'0';
 	Result.Time[1]=t.tm_hour%10+'0';
 	Result.Time[2]=':';
-	Result.Time[3]=' ';
-	Result.Time[4]=t.tm_min/10+'0';
-	Result.Time[5]=t.tm_min%10+'0';
-	Result.Time[6]=':';
-	Result.Time[7]=' ';
-	Result.Time[8]=t.tm_sec/10+'0';
-	Result.Time[9]=t.tm_sec%10+'0';
-	Result.Time[10]='\0'; 
+	//Result.Time[3]=' ';
+	Result.Time[3]=t.tm_min/10+'0';
+	Result.Time[4]=t.tm_min%10+'0';
+	Result.Time[5]=':';
+	//Result.Time[7]=' ';
+	Result.Time[6]=t.tm_sec/10+'0';
+	Result.Time[7]=t.tm_sec%10+'0';
+	Result.Time[8]='\0'; 
 	}
     config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //更新系统心跳
 	

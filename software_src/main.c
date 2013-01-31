@@ -49,6 +49,15 @@ void main(void){
 	 dateRefresh(1);
 	 WriteFileHead();
      Result.Index=findIndex(get_name(filename),buf512);
+	 while(1){
+	  		dateRefresh(1);
+	 		check();
+			StructToChar(); //转成字符串
+			WriteFileHead();//重写文件头
+			WriteSDFile();  //写入sd卡
+			//zigbee_send(); //发送
+			Result.Index++; //索引自增一
+	 }
 	 #ifdef _DBG_RD_
 	 	 while(1){
 		     GUI_readback(buf512);
@@ -126,7 +135,7 @@ void WriteFileHead(void)
 	 #ifdef _DEBUG
 	 debug("fopen",res);
 	 #endif
-	 res = f_write(&file,itam,sizeof(itam),&bw);   //bw 已写入字节数
+	 res = f_write(&file,itam,128,&bw);   //bw 已写入字节数
 	 #ifdef _DEBUG
 	 debug("fwrite",res);
 	 #endif
@@ -329,9 +338,11 @@ void check( void )
  SEI();
  //计算风速
  Result.WindSpeed=WScounter/N_per_Second;
+  Result.WindSpeed=1.1;
  //温度
  Result.Temperature=read_T_NUM(1); //读两次 避免出错
  Result.Temperature=read_T_NUM(1);
+  Result.Temperature=-24.1;
  //WCI风冷指数
   Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
  //ECT等价制冷温度
@@ -339,13 +350,20 @@ void check( void )
  //TEQ 相当温度
  Result.Teq = Result.Temperature +( (Result.Temperature -36)/10 ) * Result.WindSpeed ;
 //将数据转换成字符串
- 
+/* 
 ftochr(Result.WindSpeed,Result.WSChar);
 ftochr(Result.Temperature,Result.TempChar);//PrintString_n(Result.TempChar);
 ftochr(Result.WCI,Result.WCIChar);
 ftochr(Result.ECT,Result.ECTChar);
 ftochr(Result.Teq,Result.TeqChar);
 itoa(Result.IndexChar,Result.Index,10);
+*/
+sprintf(Result.WSChar, "%f", Result.WindSpeed);
+sprintf(Result.TempChar, "%f", Result.Temperature);//PrintString_n(Result.TempChar);
+sprintf(Result.WCIChar, "%f",  Result.WCI);
+sprintf(Result.ECTChar, "%0.1f", Result.ECT);
+sprintf(Result.TeqChar, "%0.1f", Result.Teq);
+sprintf(Result.IndexChar, "%d", Result.Index);
 Result.TempChar[6]='\0';
 Result.WSChar[5]='\0';
 Result.WCIChar[6]='\0';
