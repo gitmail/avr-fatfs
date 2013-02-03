@@ -26,11 +26,10 @@ void initDevices(void){
 	 LCD_INT();delayms(50);LCD_INT();
 	 LCD_SW(1);
 	 config.THRESHOLD_delta_sec=60; //一次检测用时
-	 config.autocheck=1;        //自动检测开关
 	 config.heatThreshold = 5; //继电器开启温度 
-	 config.checkDeltaTime=20;  //自动检测模式 时间间隔
+	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
+	 config.autocheck=1;        //自动检测开关
 	 config.readMode = 0;      //读数据模式
-	 
 	 SEI();
 }
 void timer1_init(void)
@@ -51,7 +50,7 @@ void main(void){
 	 dateRefresh(1);
 	 WriteFileHead();
      Result.Index=findIndex(get_name(filename),buf512);
-	 #ifdef _DBG_RD_
+	 #ifdef _DBG_RD_  
 	 	 while(1){
 		     GUI_readback(buf512);
 	     }
@@ -92,18 +91,21 @@ void heaterSwitch(void)
 void selfTest(void){
 	float tmp=0;                                                                
 	char str1[6],str2[6];
-	
+	lp("┌──────┐");
+	lp("│  自检程序  │");
+	lp("│            │");
+	lp("└──────┘");
 	 //自检程序
-	lp("自检程序");delayms(500);
+	delayms(500);
 	lp("外部温度 ");
 	tmp=read_T_NUM(OUTSIDE_SENSOR);
-	sprintf(str1,"%0.1f",tmp);
+	sprintf(str1,"%#0.1f",tmp);
 	str1[6]=0;
 	lp(str1);
 	delayms(500);
 	lp("内部温度");
 	tmp=read_T_NUM(INSIDE_SENSOR);
-	sprintf(str2,"%0.1f",tmp);
+	sprintf(str2,"%#0.1f",tmp);
 	str2[6]=0;
 	lp(str2);
 	delayms(500);
@@ -120,7 +122,11 @@ void selfTest(void){
 	RELAY_ON();delayms(100);
 	RELAY_OFF();delayms(100);
 	lp("  ");delayms(500);
-	lp("完成自检");delayms(500);
+	lp("                ");
+	lp("                ");
+	lp("                ");
+	lp("                ");
+	delayms(100);
 	  
 }
 
@@ -260,7 +266,7 @@ unsigned int findIndex(char *filename,char *buf){
 	for(tmp=readsize;tmp>0;tmp--){
 		//debug("buf index",buf[tmp]);
 		//PrintLong(tmp);
-		if(buf[tmp] == '\n') Usart_Transmit('@');						  
+		//if(buf[tmp] == '\n') Usart_Transmit('@');						  
 		if(buf[tmp] == '\n' && is_first_end== 0){
 		    is_first_end=1; 	
 			//debug("first=",0xf0);					      
@@ -312,7 +318,6 @@ void check( void )
  Result.WindSpeed=WScounter/N_per_Second;
  //四舍五入
  Result.WindSpeed=Round(Result.WindSpeed);
- Result.WindSpeed=1.0;
   //温度
  Result.Temperature=read_T_NUM(OUTSIDE_SENSOR); //读两次 避免出错
  Result.Temperature=read_T_NUM(OUTSIDE_SENSOR);
@@ -325,11 +330,11 @@ void check( void )
  //TEQ 相当温度
  Result.Teq = Result.Temperature +( (Result.Temperature -36)/10 ) * Result.WindSpeed ;
 //将数据转换成字符串
-sprintf(Result.WSChar, "%0.1lf", Result.WindSpeed);
-sprintf(Result.TempChar, "%0.1lf", Result.Temperature); //PrintString_n(Result.TempChar);
-sprintf(Result.WCIChar, "%0.1lf",  Result.WCI); //PrintString_n(Result.WCIChar);
-sprintf(Result.ECTChar, "%0.1lf", Result.ECT);  //PrintString_n(Result.ECTChar);
-sprintf(Result.TeqChar, "%0.1lf", Result.Teq);
+sprintf(Result.WSChar, "%#.1lf", (float)Result.WindSpeed);
+sprintf(Result.TempChar, "%#.1lf", (float)Result.Temperature); //PrintString_n(Result.TempChar);
+sprintf(Result.WCIChar, "%#.1lf",  (float)Result.WCI); //PrintString_n(Result.WCIChar);
+sprintf(Result.ECTChar, "%#.1lf", (float)Result.ECT);  //PrintString_n(Result.ECTChar);
+sprintf(Result.TeqChar, "%#.1lf", (float)Result.Teq);
 sprintf(Result.IndexChar, "%d", Result.Index);
 Result.TempChar[6]='\0';
 Result.WSChar[5]='\0';
@@ -425,27 +430,8 @@ void CharToStruct(char *buf)
 		p=ary[j];
 		continue ;
 	}
-	//Usart_Transmit('-');
-	//Usart_Transmit(*q);
-	//Usart_Transmit(']');
-	//PrintChar(*q);
-	//Usart_Transmit('+');
     *p++=*q++;
 	}
-	/* for debug
-	PrintString_n(Result.IndexChar);
-	PrintString_n(Result.Date);
-	PrintString_n(Result.Time);
-	PrintString_n(Result.TempChar);
-	PrintString_n(Result.WSChar);
-	PrintString_n(Result.WCIChar);
-	PrintString_n(Result.ECTChar);
-	PrintString_n(Result.TeqChar);
-	Result.WeiHai=*(q+1)-0x30;
-	Result.LowLabor=*(q+3)-0x30;
-	Result.MidLabor=*(q+5)-0x30;
-	Result.HighLabor=*(q+7)-0x30;
-	*/
 	return ;
 }
  

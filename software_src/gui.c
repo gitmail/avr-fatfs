@@ -28,7 +28,7 @@ const char L12[]="劳动时间<15min；\0";
 #define H23 H03
 const char M21[]="取消户外作业。"; 
 #define L21 M21
-
+const char str_blank[]="----------------"; 
 //#define LEDON   PORTC&=~(1<<7)					   
 //#define LEDOFF  PINC|=(1<<7)
 char GUI_date[17]="09月19日18:00:00\0";
@@ -119,6 +119,7 @@ RE_IN:
 	while(1){
 	 	key=kbscan();
 		heaterSwitch();
+		dateRefresh(0); //只刷新后台时间
 		//上键短按 选择
 		if(key==up || key ==down){
 		    if(selectCheckMode >0){
@@ -155,6 +156,7 @@ RE_IN:
 	while(1){
 		key=kbscan();
 		heaterSwitch();
+		dateRefresh(0); //只刷新后台时间
 		if(key != 0) beep(0,1);
 		if(key==right){	//右键 退出
 		    is_on=0;
@@ -239,23 +241,23 @@ RE_IN:
 			      if(config.now >= next_step_time || page >=6 )	{
 				      next_step_time = config.now + config.checkDeltaTime;
 					  page++;
-					  if( page>=6 ){
-					      //自动翻到最后页，页面清零开启下次检测
+					  LCD_CLR(); 
+					  key=0;
+				  }  
+			}
+			if( page>=6 ){
+					      //翻到最后页，页面清零开启下次检测
 					      page = 0;
 						  dateRefresh(1); //刷新时间
 						  is_on =1 ; //开启检测
 						  config.time1=config.now+config.THRESHOLD_delta_sec; //更新下次检测时间
 						  Result.TempChar[0]=0; //清除上次结果
 						  Result.WSChar[0]=0;
+					   	  LCD_CLR();  
 					  }
-				      LCD_CLR();      
-					  key=0;
-				  }  
-			}
+				         
+				
 
-			
-
-			 
 		} 
 	    delayms(10); 
 	}//end while
@@ -316,10 +318,10 @@ void _GUI_datashow(char page){
 	 			case 0 :
 				LCD_const_disp(2,1,M01);
 				LCD_const_disp(3,1,M02);
-				if(Result.Temperature < 17.7){
+				if(Result.Temperature < -17.7){
 				    LCD_const_disp(4,1,"戴面罩；禁油彩。");
 				}
-				else if(Result.Temperature < 12){
+				else if(Result.Temperature < -12){
 				    LCD_const_disp(4,1,"禁油彩。        \0");
 				}
 				break;
@@ -576,9 +578,11 @@ void GUI_readback(char *buf){
 		//设置条数 判断边界 进入5
 		//退出 返回主程序	
 	//!!res=checkFile(file_buf);
-	LCD_CLR(); //清屏
+label_recheck:	
+	LCD_Init(); //清屏
+	LCD_CLR();  
 	if(res == 0){ //找到并已经确认文件
-		   LCD_const_disp(1,1,"菜单/ 检测");
+		   LCD_const_disp(1,1,"菜单/ 查询");
    		   LCD_const_disp(2,3,"按顺序");
 		   LCD_const_disp(3,3,"最后一次");		 
 	       if(config.readMode == READ_MODE_LAST){
@@ -591,10 +595,11 @@ void GUI_readback(char *buf){
 			   Set_White(1,2,8,1);
  			   Set_White(1,3,8,0);
 		 }
-		   //<<菜单/检测/手（自）动>>
+		   // 菜单/查询   按顺序/最后一次
 		   while(1){
  		       key=kbscan();
 			   heaterSwitch();
+			   dateRefresh(0); //只刷新后台时间
 			   //上键短按 选择
 			   if(key==up || key ==down){
 	    	       if(config.readMode == READ_MODE_LAST){
@@ -610,14 +615,16 @@ void GUI_readback(char *buf){
 				}      
 				//左键短按  进入
 				if(key == left) {
-				Set_White(1,2,8,1);
- 				Set_White(1,3,8,1);
-				delayms(100);
+				    Set_White(1,2,8,1);
+ 				    Set_White(1,3,8,1);
+					delayms(100);
 				break ;		
 				}
 				//右键短按  返回
 				if(key == right) {
-				return ;		
+				    LCD_CLR();
+	    			LCD_Init(); //清屏
+					return ;	//返回主界面	
 				}
 				key=0;
 		    } //end of while
@@ -631,60 +638,73 @@ void GUI_readback(char *buf){
 			while(1){
 			    key=kbscan();     //键盘扫描
 				heaterSwitch();
-				if(key != 0) beep(0,1);
+				dateRefresh(0); //只刷新后台时间
+				if(key != 0){ 
+					   beep(0,1);
+				}
 				//dateRefresh(0);  //刷新
 				_GUI_datashow(page); //显示
 				if( key==left ){ //按left键下一条
 					next_item:  //下一条
 				    ReadSDFile(file_buf,1,buf,1); //偏移到下一条
 					CharToStruct(buf);
+					LCD_CLR();
+		    		LCD_Init();
 					page = 0;
 					key=0;
 				}
-				if( key==lleft ){ //长按按left键上一条
+				if( key==lleft ){ //长按left键上一条
 		    	    pre_item: //上一条
 					ReadSDFile(file_buf,-1,buf,1); //偏移到上一条
 					CharToStruct(buf);
+					LCD_CLR();
+		    		LCD_Init();
 					page = 0;
 					key=0;
 				}
 				if(key==up){ //上键 : 页面减 
-	    		     if(page>0) page--;
-	    			 else goto pre_item;
-					 LCD_CLR();
-	    			 LCD_Init();
-    			}
+	    		     LCD_CLR();
+		    		 LCD_Init();
+					 if(page>0) page--;
+	    			 else{ 
+					    goto pre_item;
+					 }
+				}
 				if(key==lup){ //长按上键 : -10 条 
-	    		     ReadSDFile(file_buf,-10,buf,1); //偏移到下10条
+	    		     LCD_CLR();
+		    		 LCD_Init();
+					 ReadSDFile(file_buf,-10,buf,1); //偏移到下10条
 					 CharToStruct(buf);
 					 page = 0;
-					 key=0;
-					 LCD_CLR();
-	    			 LCD_Init();
-    			}
-				if(key==down){ //下键 ： 页面加
-	    		    if(page<5) page++;
-	  				else goto next_item;
-	    			LCD_CLR();
-	    			LCD_Init();
+					 key = 0;
 				}
-				if(key==ldown){ //长按下键 ： 页面加10条
-	    		    ReadSDFile(file_buf,10,buf,1); //偏移到下10条
-					CharToStruct(buf);
+				if(key==down){ //下键 ： 页面加
+					LCD_CLR();
+		    		LCD_Init();
+					if(page<5) page++;
+	  				else{
+						goto next_item;
+					}
+				}
+				if(key==ldown){ //长按下键 ： 页面加10条·
+					LCD_CLR();
+		    		LCD_Init();
 					page = 0;
 					key = 0;
-	    			LCD_CLR();
-	    			LCD_Init();
+	 				ReadSDFile(file_buf,10,buf,1); //偏移到下10条
+					CharToStruct(buf);
 				}
-				if(key==right){	//右键 退出
-	    		    beep(0,1); 
-	 				LCD_CLR();
-	 				return ;
+				//右键短按  返回
+				if(key == right) {
+				    LCD_CLR();
+		    		LCD_Init();
+					goto label_recheck;	   
 				}
 				if(page == 0 ){
-				    LCD_const_disp(4,1,"ID:             ");
+					LCD_const_disp(4,1,"ID:             ");
 					LCD_const_disp(4,3,Result.IndexChar);
 				}
+
     			delayms(30); 
 		 }//end while
 		   

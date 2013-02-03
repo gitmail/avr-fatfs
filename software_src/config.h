@@ -1,9 +1,9 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 //debug选项
-#define _DEBUG
+//#define _DEBUG
 //#define _LCDDEBUG
-#define _UARTDEBUG
+//#define _UARTDEBUG
 //#define _DBG_RD_
 //类型定义
 #define INT8   char
