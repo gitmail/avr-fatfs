@@ -5,6 +5,7 @@
 //#define _LCDDEBUG
 //#define _UARTDEBUG
 //#define _DBG_RD_
+//#define _FOR_FAST_TEST
 //类型定义
 #define INT8   char
 #define UINT8  unsigned char

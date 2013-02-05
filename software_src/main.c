@@ -30,6 +30,11 @@ void initDevices(void){
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
 	 config.autocheck=1;        //自动检测开关
 	 config.readMode = 0;      //读数据模式
+	 #ifdef _FOR_FAST_TEST
+	 config.THRESHOLD_delta_sec=5; //一次检测用时
+	 config.heatThreshold = 20; //继电器开启温度 
+	 config.checkDeltaTime=5;  //自动检测模式 时间间隔	 
+	 #endif
 	 SEI();
 }
 void timer1_init(void)
@@ -80,11 +85,15 @@ void heaterSwitch(void)
  	 last=config.now+5;
      temp= readWithoutDelay(INSIDE_SENSOR);
      if (temp>config.heatThreshold) {
- 	     RELAY_OFF(); debug("off=",(int)temp);
+ 	     RELAY_OFF(); //debug("off=",(int)temp);
+		// beep(0,1);
+		// LCD_SW(0);
 		 return ;
  	  }
       else  {
-   	     RELAY_ON();debug("on=",(int)temp);
+   	     RELAY_ON();//debug("on=",(int)temp);
+		// LCD_SW(1);
+		// beep(0,2);
  	  } 
 }
 }

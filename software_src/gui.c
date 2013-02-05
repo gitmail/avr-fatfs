@@ -233,6 +233,10 @@ RE_IN:
 				next_step_time = config.now + config.checkDeltaTime;
 		  		LCD_CLR();
 		    	LCD_Init();
+				if(page >= 6 ) {
+					page=0;
+					continue ;
+				}
 			} 	
 			//LCD_print2num(4,1,page);
 			//LCD_print4num(4,3,config.now);
@@ -245,7 +249,7 @@ RE_IN:
 					  key=0;
 				  }  
 			}
-			if( page>=6 ){
+			if( page>=6 || key == left){
 					      //翻到最后页，页面清零开启下次检测
 					      page = 0;
 						  dateRefresh(1); //刷新时间
