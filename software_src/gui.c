@@ -53,11 +53,10 @@ unsigned char GUI_mainmeu( void ){
 	Set_White(1,3,8,1);
 	Set_White(1,4,8,1);
 	set_white_n(select,0);
-	while(1)
+	while(alwaysCheck())
 	{
 	 	key=kbscan();
 		dateRefresh(1); //更新系统时间
-		heaterSwitch();
 		LCD_const_disp(1,1,GUI_get_date()); //显示时间
 		if((select>3) && ( key==up ) ){
 		 Set_White(1,2,8,1);
@@ -116,9 +115,8 @@ RE_IN:
 	}
 	
 //<<菜单/检测/手（自）动>>
-	while(1){
+	while(alwaysCheck()){
 	 	key=kbscan();
-		heaterSwitch();
 		dateRefresh(0); //只刷新后台时间
 		//上键短按 选择
 		if(key==up || key ==down){
@@ -153,9 +151,8 @@ RE_IN:
 	config.time1=config.now+config.THRESHOLD_delta_sec;
 	Result.TempChar[0]=0; //清除上次结果
 	Result.WSChar[0]=0;
-	while(1){
+	while(alwaysCheck()){
 		key=kbscan();
-		heaterSwitch();
 		dateRefresh(0); //只刷新后台时间
 		if(key != 0) beep(0,1);
 		if(key==right){	//右键 退出
@@ -197,7 +194,9 @@ RE_IN:
 				StructToChar(); //转成字符串
 				WriteFileHead();//重写文件头
 				WriteSDFile();  //写入sd卡
-				//zigbee_send(); //发送
+				if(config.autoSend>=1) {
+					 zigbee_send_date(); //zigbee发送
+				}
 				Result.Index++; //索引自增一
 				is_on=0; //切换到非检测状态
 				next_step_time=config.now+config.checkDeltaTime;//自动翻页时间更新
@@ -263,6 +262,7 @@ RE_IN:
 				
 
 		} 
+		
 	    delayms(10); 
 	}//end while
 }//end function
@@ -397,9 +397,8 @@ void GUI_set_time(void){
 	LCD_var_disp(2,1,pD);
 	LCD_var_disp(4,1,pT);
 	delayms(250);
-	while(1){
+	while(alwaysCheck()){
 	    keyc=kbscan();
-		heaterSwitch();
 		pD[2]=Result.Date[2];
 		pD[3]=Result.Date[3];
 		pD[6]=Result.Date[4];
@@ -600,9 +599,8 @@ label_recheck:
  			   Set_White(1,3,8,0);
 		 }
 		   // 菜单/查询   按顺序/最后一次
-		   while(1){
+		   while(alwaysCheck()){
  		       key=kbscan();
-			   heaterSwitch();
 			   dateRefresh(0); //只刷新后台时间
 			   //上键短按 选择
 			   if(key==up || key ==down){
@@ -639,9 +637,8 @@ label_recheck:
 			    ReadSDFile(file_buf,1,buf,0); //读第一条
 			}
 			CharToStruct(buf);      //转换
-			while(1){
+			while(alwaysCheck()){
 			    key=kbscan();     //键盘扫描
-				heaterSwitch();
 				dateRefresh(0); //只刷新后台时间
 				if(key != 0){ 
 					   beep(0,1);

@@ -11,18 +11,20 @@
 // parity: Disabled
 void uart1_init(void)
 {
- 	 UCSR1B = 0x00; //disable while setting baud rate
-     UCSR1A = 0x00;
-     UCSR1C = (1<<UCSZ11)|(1<<UCSZ10);//8bit+1bit stop
-     UBRR1L=(fosc/16/(baud+1))%256;
-     UBRR1H=(fosc/16/(baud+1))/256;
-     UCSR1B =(1<<RXEN1)|(1<<TXEN1);//RXCEN TXCEN
+ UCSR1B = 0x00; //disable while setting baud rate
+ UCSR1A = 0x00;
+ UCSR1C = 0x06;
+ UBRR1L = 0x0B; //set baud rate lo
+ UBRR1H = 0x00; //set baud rate hi
+ UCSR1B = 0x98;
 }
 
 #pragma interrupt_handler uart1_rx_isr:iv_USART1_RXC
 void uart1_rx_isr(void){   
 	 char tmp;
 	 tmp=UDR1;
+	 //Usart_Transmit(tmp);
+	 RecAdd(tmp); //this function is come from zigbee.c
 }
 
 void Usart_Transmit(char c)

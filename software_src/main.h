@@ -15,7 +15,9 @@ void WriteSDFile(void);
 void CharToStruct(char *buf);
 void timer1_init(void);
 //char scan_files (char* path); //文件查找函数 查找指定目录下的所有文件
-void heaterSwitch(void);
+char alwaysCheck(void);
+void debug(UINT8 *str,UINT8 val);
+
 #endif
 
 

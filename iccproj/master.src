@@ -13,6 +13,8 @@
 ..\software_src\sd.c
 ..\software_src\gui.c
 ..\software_src\gui.h
+..\software_src\zigbee.c
+..\software_src\zigbee.h
 [Headers]
 [Documents]
 [hal]

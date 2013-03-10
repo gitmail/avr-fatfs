@@ -47,9 +47,11 @@
 #include "gui.h"
 //电池电量检测
 #include "powercheck.h"
+//无线通讯
+#include "zigbee.h"
 
 struct DATA {
-   char  ID;
+   char  ID	;
    char  Name[9]	  ;
    unsigned long Index ;
    char IndexChar[8]  ;
@@ -82,6 +84,7 @@ struct DATA {
 		int checkDeltaTime;
 		char readMode; //0=最后一次 1=按顺序d
 		char heatThreshold;
+		char autoSend;
 		
   };
  #define READ_MODE_LAST 0
@@ -101,7 +104,7 @@ struct DATA {
  	int tm_isdst; // 夏令时？？Daylight Savings Time flag
  	};  
 extern struct CONFIG config; 
-extern const char devicename[8];//设备名称
+extern char devicename[8];//设备名称
 extern const char deviceId ;	
 extern  struct  tm t; //文件系统时间存储结构体
 extern unsigned char time_buf[8]; //外部变量 存储上1302上时间的原始形式

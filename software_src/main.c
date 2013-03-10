@@ -30,6 +30,7 @@ void initDevices(void){
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
 	 config.autocheck=1;        //自动检测开关
 	 config.readMode = 0;      //读数据模式
+	 config.autoSend = 1; //zigbee发送开关，>=1时，使能发送
 	 #ifdef _FOR_FAST_TEST
 	 config.THRESHOLD_delta_sec=5; //一次检测用时
 	 config.heatThreshold = 20; //继电器开启温度 
@@ -62,7 +63,15 @@ void main(void){
 	 #endif
 	 //selfTest();
 	 GUI_welcome();
-	 while(1){
+	 /*
+	 while(1)
+	 {
+	   delayms(100);dateRefresh(1);StructToChar();
+	   check();
+	   zigbee_send_date();
+	 }
+	  */
+	 while(alwaysCheck()){
 	    tmp=GUI_mainmeu();
 		switch(tmp){
 		    case 3 : GUI_check(); break; 
@@ -72,30 +81,27 @@ void main(void){
 			case 7 : selfTest(); break ;
 			default : break;
 	   }
-	   heaterSwitch();
 	   delayms(100);
 	 }
 }
-void heaterSwitch(void)
+char alwaysCheck(void)
 {
  static unsigned long last=0;
  float temp;
+ RecDeal(); //zigbee data deal
  if(config.now>last)
  {   
  	 last=config.now+5;
      temp= readWithoutDelay(INSIDE_SENSOR);
      if (temp>config.heatThreshold) {
  	     RELAY_OFF(); //debug("off=",(int)temp);
-		// beep(0,1);
-		// LCD_SW(0);
-		 return ;
+		 return 1;
  	  }
       else  {
    	     RELAY_ON();//debug("on=",(int)temp);
-		// LCD_SW(1);
-		// beep(0,2);
- 	  } 
-}
+	  } 
+ }
+ return 1;
 }
 void selfTest(void){
 	float tmp=0;                                                                
@@ -148,22 +154,10 @@ void WriteFileHead(void)
 	 char fnamep[]="201201.xls\0\0\0"; 
 	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\r\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0";
 	 res=disk_initialize(0);
-	 #ifdef _DEBUG
-	 debug("dinit",res);
-	 #endif
 	 res = f_mount(0, &fs);
-	 #ifdef _DEBUG
- 	 debug("dmnt",res);
-	 #endif
 	 //get_name(fnamep)
 	 res = f_open(&file, get_name(fnamep) , FA_OPEN_ALWAYS | FA_WRITE );  //创建一个新的文件
-	 #ifdef _DEBUG
-	 debug("fopen",res);
-	 #endif
 	 res = f_write(&file,itam,128,&bw);   //bw 已写入字节数
-	 #ifdef _DEBUG
-	 debug("fwrite",res);
-	 #endif
 	 f_close(&file);
 	 f_mount(0, NULL);
 } /////////////////////////////////////////////////
