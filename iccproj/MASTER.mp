@@ -3,274 +3,275 @@ All other addresses (including ones in FLASH) are byte addresses
 
 Area                               Addr   Size   Decimal Bytes (Attributes)
 --------------------------------   ----   ----   ------- ----- ------------
-                        func_lit   008C   0002 =      2. bytes (rel,con,rom)
+                        func_lit   008C   0020 =     32. bytes (rel,con,rom)
 
        Addr  Global Symbol
       -----  --------------------------------
        008C  __func_lit_start
-       008E  __func_lit_end
+       00AC  __func_lit_end
 
 Area                               Addr   Size   Decimal Bytes (Attributes)
 --------------------------------   ----   ----   ------- ----- ------------
-                             lit   008E   01C4 =    452. bytes (rel,con,rom)
+                             lit   00AC   01C4 =    452. bytes (rel,con,rom)
 
        Addr  Global Symbol
       -----  --------------------------------
-       008E  __lit_start
-       00E4  __ctype
-       0252  __lit_end
+       00AC  __lit_start
+       0102  __ctype
+       0270  __lit_end
 
 Area                               Addr   Size   Decimal Bytes (Attributes)
 --------------------------------   ----   ----   ------- ----- ------------
-                           idata   0252   04E7 =   1255. bytes (rel,con,rom)
+                           idata   0270   04E7 =   1255. bytes (rel,con,rom)
 
        Addr  Global Symbol
       -----  --------------------------------
-       0252  __idata_start
-       0739  __idata_end
+       0270  __idata_start
+       0757  __idata_end
 
 Area                               Addr   Size   Decimal Bytes (Attributes)
 --------------------------------   ----   ----   ------- ----- ------------
-                            text   073A   A82A =  43050. bytes (rel,con,rom)
+                            text   0758   A838 =  43064. bytes (rel,con,rom)
 
        Addr  Global Symbol
       -----  --------------------------------
-       039D  __text_start
-       039D  __start
-       03BF  _exit
-       03C0  _disk_initialize
-       03D6  _disk_status
-       03DC  _disk_read
-       03FC  _disk_write
-       0414  _disk_ioctl
-       0419  _get_fattime
-       041E  ff.c:mem_cpy
-       0434  ff.c:mem_set
-       0446  ff.c:mem_cmp
-       0467  ff.c:chk_chr
-       0477  ff.c:move_window
-       0519  ff.c:sync
-       05EE  _clust2sect
-       0640  _get_fat
-       0790  _put_fat
-       094F  ff.c:remove_chain
-       0A02  ff.c:create_chain
-       0B7A  ff.c:clmt_clust
-       0BF3  ff.c:dir_sdi
-       0CFD  ff.c:dir_next
-       0EAB  ff.c:dir_find
-       0EF0  ff.c:dir_read
-       0F3B  ff.c:dir_register
-       0F9E  ff.c:create_name
-       10A6  ff.c:get_fileinfo
-       1149  ff.c:follow_path
-       11CD  ff.c:check_fs
-       1295  ff.c:chk_mounted
-       178F  ff.c:validate
-       17AC  _f_mount
-       17D7  _f_open
-       1973  _f_read
-       1BDE  _f_write
-       1EF7  _f_sync
-       1FA8  _f_close
-       1FB8  _f_lseek
-       2475  _f_opendir
-       24E9  _f_readdir
-       2532  _delayus
-       253A  _delayms
-       2551  _initDevices
-       258B  _timer1_init
-       2593  _main
-       25F7  _alwaysCheck
-       263D  _selfTest
-       271E  _WriteFileHead
-       2785  _WriteSDFile
-       27E7  _ReadSDFile
-       2899  _findIndex
-       29EB  _Round
-       2A5A  _check
-       2BC4  _StructToChar
-       2C2D  _CharToStruct
-       2C72  _get_name
-       2CB1  _SquareRootFloat
-       2D4D  _debug
-       2D5D  _SD_Write_cmd
-       2D8F  _SD_Init
-       2DEF  _SD_Write_Sector
-       2E75  _SD_Read_Sector
-       2EE3  _SD_Read_Sector_ndata
-       2F68  _GUI_mainmeu
-       305D  _GUI_check
-       32FF  __GUI_datashow
-       350B  _GUI_get_date
-       3539  _GUI_set_time
-       378E  _GUI_readback
-       3939  _GUI_welcome
-       3956  _dateRefresh
-       3A9F  _zigbee_init
-       3AA7  _RecAdd
-       3AC3  _RecRemove
-       3AFF  _RecRead
-       3B1D  _CheckCRC
-       3B22  _RecDeal
-       3C00  _Send_string
-       3C5C  _zigbee_send_date
-       3C99  _uart1_init
-       3CAA  _uart1_rx_isr
-       3CDE  _Usart_Transmit
-       3CE5  _Puts
-       3CFB  _Send_nByte
-       3D10  _PrintString
-       3D1F  _PrintString_n
-       3D32  _PrintLong
-       3E7A  _PrintChar
-       3E9A  _SPI_IO_Init
-       3EA4  _SPI_Write
-       3EA8  _SPI_Read
-       3EAE  _LCD_SW
-       3EB8  _LCD_INT
-       3EC1  _address
-       3EE2  _LCD_const_disp
-       3F0F  _LCD_var_disp
-       3F3C  _LCD_char_disp
-       3F56  _LCD_Init
-       3F88  _LCD_CLR
-       3FA8  _W_1byte
-       3FE1  _Write_8bits
-       4006  _Set_Draw
-       4012  _Set_White
-       40A4  _set_white_n
-       40F0  _clr_white
-       4178  _LCD_print2num
-       41A4  _LCD_print4num
-       41C8  _LCD_print
-       41DD  _LCD_print1
-       41E7  _lp
-       424F  _relay_init
-       4252  _relay
-       425F  _beep
-       4288  _Delay_nus
-       4298  _reset_18B20
-       4304  _write_bit_18B20
-       434C  _read_bit_18B20
-       439F  _write_byte_18B20
-       43C0  _read_byte_18B20
-       43E1  _convert_T
-       43E9  _read_T
-       4417  _read_T_NUM
-       4435  _readWithoutDelay
-       444F  _ds1302_init
-       4454  _ds1302_write_byte
-       4476  _ds1302_read_byte
-       449B  _ds1302_write_time
-       44C0  _ds1302_read_time
-       44E8  _kbscan
-       4531  __print
-       499E  _memset
-       49A9  _strcat
-       49B6  _strlen
-       49C2  push_arg4
-       49C4  push_arg2
-       49C7  asr32
-       49D3  mod16s
-       49D7  div16s
-       49F1  mod16u
-       49F3  div16u
-       49F4  xdiv16u
-       4A0D  div32u
-       4A0F  mod32u
-       4A13  div32s
-       4A15  mod32s
-       4A41  long_div_prolog
-       4A54  long_div_epilog
-       4A64  tst_R16_R19
-       4A69  tst_R24_R27
-       4A6E  neg_R24_R27
-       4A77  mod8u
-       4A79  div8u
-       4A7A  xdiv8u
-       4A8F  elpm32
-       4AA3  empy16s
-       4AB3  empy32s
-       4AB3  empy32u
-       4AE7  pop_xgset003C
-       4AEC  pop_xgset00FC
-       4AF3  pop_xgset30FC
-       4AFC  pop_xgsetF0FC
-       4B07  push_xgsetF0FC
-       4B09  push_xgset30FC
-       4B0B  push_xgset00FC
-       4B0D  push_xgset003C
-       4B12  push_xgset300C
-       4B17  pop_xgset300C
-       4B1C  push_xgsetF000
-       4B21  pop_xgsetF000
-       4B26  push_xgsetF00C
-       4B2D  pop_xgsetF00C
-       4B34  push_xgset303C
-       4B3B  pop_xgset303C
-       4B42  push_xgsetF03C
-       4B4B  pop_xgsetF03C
-       4B54  xicallx
-       4B5D  neg32
-       4B66  long_prolog
-       4B74  long_epilog
-       4B7F  tstzero1
-       4B85  tstzero2
-       4B8B  lsl16
-       4B92  lsl32
-       4B9E  lsl8
-       4BA4  lsr16
-       4BAB  lsr32
-       4BB7  asgnblk
-       4BCF  fpsub
-       4BD1  fpadd
-       4BD2  fpadd_alt
-       4C39  fpadd1
-       4C43  fpadd2
-       4C4E  fpsub1
-       4C58  fpsub2
-       4C63  fpsub1x
-       4C70  fpsub2x
-       4C7E  fpint
-       4CB0  uint2fp
-       4CB2  int2fp
-       4CBB  ulong2fp
-       4CBD  long2fp
-       4CD4  fpdiv1
-       4CDD  fpdiv2
-       4CE7  fpdiv1x
-       4CF3  fpdiv2x
-       4D6E  unpacks
-       4D76  tstR16_R19
-       4D7E  unpacku
-       4D97  normalize_and_pack
-       4DCC  pack
-       4DDC  saveFPRegs
-       4DEB  restoreFPRegs
-       4DFA  fpmule
-       4E4D  fpmule1
-       4E57  fpmule2
-       4E62  fpmule1x
-       4E6F  fpcmp
-       4E7C  fpcmp1
-       4E87  fpcmp2
-       4E93  _cstrcpy
-       4E9D  _cstrlen
-       4EAA  _atoi
-       4EF0  _itoa
-       4F5B  _ltoa
-       5013  _ultoa
-       507A  _utoa
-       50BA  _ftoa
-       5249  _isdigit
-       5253  _islower
-       525D  _isspace
-       5267  _toupper
-       527A  __sdepi
-       5284  _sprintf
-       52C8  __FormatFP_1
-       57B2  __text_end
+       03AC  __text_start
+       03AC  __start
+       03CE  _exit
+       03CF  _initDevices
+       040B  _timer1_init
+       0413  _main
+       0477  _alwaysCheck
+       04BF  _selfTest
+       059C  _WriteFileHead
+       0603  _WriteSDFile
+       0665  _ReadSDFile
+       0717  _findIndex
+       0869  _Round
+       08D8  _check
+       0A42  _StructToChar
+       0AAB  _CharToStruct
+       0AF0  _get_name
+       0B2F  _SquareRootFloat
+       0BCB  _debug
+       0BDB  _disk_initialize
+       0BF1  _disk_status
+       0BF7  _disk_read
+       0C17  _disk_write
+       0C2F  _disk_ioctl
+       0C34  _get_fattime
+       0C39  ff.c:mem_cpy
+       0C4F  ff.c:mem_set
+       0C61  ff.c:mem_cmp
+       0C82  ff.c:chk_chr
+       0C92  ff.c:move_window
+       0D34  ff.c:sync
+       0E09  _clust2sect
+       0E5B  _get_fat
+       0FAB  _put_fat
+       116A  ff.c:remove_chain
+       121D  ff.c:create_chain
+       1395  ff.c:clmt_clust
+       140E  ff.c:dir_sdi
+       1518  ff.c:dir_next
+       16C6  ff.c:dir_find
+       170B  ff.c:dir_read
+       1756  ff.c:dir_register
+       17B9  ff.c:create_name
+       18C1  ff.c:get_fileinfo
+       1964  ff.c:follow_path
+       19E8  ff.c:check_fs
+       1AB0  ff.c:chk_mounted
+       1FAA  ff.c:validate
+       1FC7  _f_mount
+       1FF2  _f_open
+       218E  _f_read
+       23F9  _f_write
+       2712  _f_sync
+       27C3  _f_close
+       27D3  _f_lseek
+       2C90  _f_opendir
+       2D04  _f_readdir
+       2D4D  _delayus
+       2D55  _delayms
+       2D6C  _SD_Write_cmd
+       2D9E  _SD_Init
+       2DFE  _SD_Write_Sector
+       2E84  _SD_Read_Sector
+       2EF2  _SD_Read_Sector_ndata
+       2F77  _GUI_mainmeu
+       306C  _GUI_check
+       330E  __GUI_datashow
+       351A  _GUI_get_date
+       3548  _GUI_set_time
+       379D  _GUI_readback
+       3948  _GUI_welcome
+       3965  _dateRefresh
+       3AAE  _zigbee_init
+       3AB6  _RecAdd
+       3AD2  _RecRemove
+       3B0E  _RecRead
+       3B2C  _CheckCRC
+       3B31  _RecDeal
+       3C04  _Send_string
+       3C60  _zigbee_send_date
+       3CA6  _zigbee_send_id
+       3CAF  _uart1_init
+       3CC0  _uart1_rx_isr
+       3CF4  _Usart_Transmit
+       3CFB  _Puts
+       3D11  _Send_nByte
+       3D26  _PrintString
+       3D35  _PrintString_n
+       3D48  _PrintLong
+       3E90  _PrintChar
+       3EB0  _SPI_IO_Init
+       3EBA  _SPI_Write
+       3EBE  _SPI_Read
+       3EC4  _LCD_SW
+       3ECE  _LCD_INT
+       3ED7  _address
+       3EF8  _LCD_const_disp
+       3F25  _LCD_var_disp
+       3F52  _LCD_char_disp
+       3F6C  _LCD_Init
+       3F9E  _LCD_CLR
+       3FBE  _W_1byte
+       3FF7  _Write_8bits
+       401C  _Set_Draw
+       4028  _Set_White
+       40BA  _set_white_n
+       4106  _clr_white
+       418E  _LCD_print2num
+       41BA  _LCD_print4num
+       41DE  _LCD_print
+       41F3  _LCD_print1
+       41FD  _lp
+       4265  _relay_init
+       4268  _relay
+       4275  _beep
+       429E  _Delay_nus
+       42AE  _reset_18B20
+       431A  _write_bit_18B20
+       4362  _read_bit_18B20
+       43B5  _write_byte_18B20
+       43D6  _read_byte_18B20
+       43F7  _convert_T
+       43FF  _read_T
+       442D  _read_T_NUM
+       444B  _readWithoutDelay
+       4465  _ds1302_init
+       446A  _ds1302_write_byte
+       448C  _ds1302_read_byte
+       44B1  _ds1302_write_time
+       44D6  _ds1302_read_time
+       44FE  _kbscan
+       4547  __print
+       49B4  _memset
+       49BF  _strcat
+       49CC  _strlen
+       49D8  push_arg4
+       49DA  push_arg2
+       49DD  asr32
+       49E9  mod16s
+       49ED  div16s
+       4A07  mod16u
+       4A09  div16u
+       4A0A  xdiv16u
+       4A23  div32u
+       4A25  mod32u
+       4A29  div32s
+       4A2B  mod32s
+       4A57  long_div_prolog
+       4A6A  long_div_epilog
+       4A7A  tst_R16_R19
+       4A7F  tst_R24_R27
+       4A84  neg_R24_R27
+       4A8D  mod8u
+       4A8F  div8u
+       4A90  xdiv8u
+       4AA5  elpm32
+       4AB9  empy16s
+       4AC9  empy32s
+       4AC9  empy32u
+       4AFD  pop_xgset003C
+       4B02  pop_xgset00FC
+       4B09  pop_xgset30FC
+       4B12  pop_xgsetF0FC
+       4B1D  push_xgsetF0FC
+       4B1F  push_xgset30FC
+       4B21  push_xgset00FC
+       4B23  push_xgset003C
+       4B28  push_xgset300C
+       4B2D  pop_xgset300C
+       4B32  push_xgsetF000
+       4B37  pop_xgsetF000
+       4B3C  push_xgsetF00C
+       4B43  pop_xgsetF00C
+       4B4A  push_xgset303C
+       4B51  pop_xgset303C
+       4B58  push_xgsetF03C
+       4B61  pop_xgsetF03C
+       4B6A  xicallx
+       4B73  neg32
+       4B7C  long_prolog
+       4B8A  long_epilog
+       4B95  tstzero1
+       4B9B  tstzero2
+       4BA1  lsl16
+       4BA8  lsl32
+       4BB4  lsl8
+       4BBA  lsr16
+       4BC1  lsr32
+       4BCD  asgnblk
+       4BE5  fpsub
+       4BE7  fpadd
+       4BE8  fpadd_alt
+       4C4F  fpadd1
+       4C59  fpadd2
+       4C64  fpsub1
+       4C6E  fpsub2
+       4C79  fpsub1x
+       4C86  fpsub2x
+       4C94  fpint
+       4CC6  uint2fp
+       4CC8  int2fp
+       4CD1  ulong2fp
+       4CD3  long2fp
+       4CEA  fpdiv1
+       4CF3  fpdiv2
+       4CFD  fpdiv1x
+       4D09  fpdiv2x
+       4D84  unpacks
+       4D8C  tstR16_R19
+       4D94  unpacku
+       4DAD  normalize_and_pack
+       4DE2  pack
+       4DF2  saveFPRegs
+       4E01  restoreFPRegs
+       4E10  fpmule
+       4E63  fpmule1
+       4E6D  fpmule2
+       4E78  fpmule1x
+       4E85  fpcmp
+       4E92  fpcmp1
+       4E9D  fpcmp2
+       4EA9  _cstrcpy
+       4EB3  _cstrlen
+       4EC0  _atoi
+       4F06  _itoa
+       4F71  _ltoa
+       5029  _ultoa
+       5090  _utoa
+       50D0  _ftoa
+       525F  _isdigit
+       5269  _islower
+       5273  _isspace
+       527D  _toupper
+       5290  __sdepi
+       529A  _sprintf
+       52DE  __FormatFP_1
+       57C8  __text_end
 
 Area                               Addr   Size   Decimal Bytes (Attributes)
 --------------------------------   ----   ----   ------- ----- ------------
@@ -278,11 +279,11 @@ Area                               Addr   Size   Decimal Bytes (Attributes)
 
        Addr  Global Symbol
       -----  --------------------------------
+       0100  _tab
        0100  __data_start
-       010F  _tab
-       0112  _enter
-       0115  _now
-       0127  main.c:last
+       0103  _enter
+       0106  _now
+       0118  main.c:last
        029E  _labelH
        02AC  _labelM
        02BC  _labelL
@@ -318,14 +319,14 @@ Area                               Addr   Size   Decimal Bytes (Attributes)
        Addr  Global Symbol
       -----  --------------------------------
        05E7  __bss_start
-       05E7  ff.c:Fsid
-       05E9  ff.c:FatFs
-       05EB  main.c:indexoffset
-       05ED  _TempChar
-       063D  _Result
-       069D  _buffer
-       089D  _t
-       08AF  _config
+       05E7  main.c:indexoffset
+       05E9  _TempChar
+       0639  _Result
+       0699  _buffer
+       0899  _t
+       08AB  _config
+       08C1  ff.c:Fsid
+       08C3  ff.c:FatFs
        08C5  _Rec
        094C  __bss_end
 
@@ -336,10 +337,10 @@ Area                               Start  End    Decimal Bytes (Attributes)
 Files Linked      [ module(s) ]
 
 D:\PROGRA~1\icc\lib\crtatmega.o	[ crtatmega.s ]
+main.o	[ main.c ]
 diskio.o	[ diskio.c ]
 ff.o	[ ff.c ]
 delay.o	[ delay.c ]
-main.o	[ main.c ]
 sd.o	[ sd.c ]
 gui.o	[ gui.c ]
 zigbee.o	[ zigbee.c ]

@@ -73,18 +73,22 @@ struct DATA {
    unsigned char    HighLabor	  ;   //重度
    };
  struct CONFIG {
- 		char Sd;
-		char Relay;
-		char LcdBackLight;
-		char BackTemp;
-		unsigned long THRESHOLD_delta_sec;
-		unsigned long time1;
-		unsigned long now;
-		char autocheck;
-		int checkDeltaTime;
-		char readMode; //0=最后一次 1=按顺序d
-		char heatThreshold;
-		char autoSend;
+ 		char Sd; //SD存储使能， =0 禁用； =1 使能
+		char Relay; //继电器状态， =0 关闭； =1 开启；
+		char LcdBackLight; //背光状态 =0 关闭； =1 开启；
+		unsigned long THRESHOLD_delta_sec; //背温检测间隔
+		unsigned long time1;  //上次检测时间
+		unsigned long now;   //当前时间 
+		char autocheck;   //自动检测开关
+		int checkDeltaTime;  //检测间隔
+		char readMode; //读取数据间隔， 0=最后一次 1=按顺序d
+		char heatThreshold; //加热门限
+		char autoSend;  //自动发送开关
+		char ComCmd; //上位机命令  
+								// =0： 无命令
+								// =1： 执行一次检测
+								// =2： 以checkDeltaTime间隔循环检测
+								// =3： 停止检测
 		
   };
  #define READ_MODE_LAST 0

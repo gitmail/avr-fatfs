@@ -30,7 +30,8 @@ void initDevices(void){
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
 	 config.autocheck=1;        //自动检测开关
 	 config.readMode = 0;      //读数据模式
-	 config.autoSend = 1; //zigbee发送开关，>=1时，使能发送
+	 config.autoSend = 1; //zigbee发送开关，不为0时，使能发送
+	 config.Sd = 1;      //Sd存储开关， 不为0时，使能存储
 	 #ifdef _FOR_FAST_TEST
 	 config.THRESHOLD_delta_sec=5; //一次检测用时
 	 config.heatThreshold = 20; //继电器开启温度 
@@ -64,7 +65,7 @@ void main(void){
 	 //selfTest();
 	 GUI_welcome();
 	 /*
-	 while(1)
+	 while(alwaysCheck())
 	 {
 	   delayms(100);dateRefresh(1);StructToChar();
 	   check();
@@ -89,9 +90,11 @@ char alwaysCheck(void)
  static unsigned long last=0;
  float temp;
  RecDeal(); //zigbee data deal
+ //间隔5s 背温检测,发送本机ID
  if(config.now>last)
  {   
  	 last=config.now+5;
+	 zigbee_send_id(); //发送本机ID
      temp= readWithoutDelay(INSIDE_SENSOR);
      if (temp>config.heatThreshold) {
  	     RELAY_OFF(); //debug("off=",(int)temp);
@@ -101,6 +104,7 @@ char alwaysCheck(void)
    	     RELAY_ON();//debug("on=",(int)temp);
 	  } 
  }
+ 
  return 1;
 }
 void selfTest(void){
@@ -327,7 +331,7 @@ void check( void )
  //四舍五入
  Result.Temperature=Round(Result.Temperature);
  //WCI风冷指数
-  Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
+ Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
  //ECT等价制冷温度
  Result.ECT=33.0f - 0.01085f*Result.WCI;
  //TEQ 相当温度

@@ -52,29 +52,47 @@ const char deviceId = 0xB6;//设备ID
 #define Z_CMD0 0xD0   
 //命令0 响应查找从机命令
 
-#define Z_CMD1 0xD1
+#define Z_CMD1_DATE 0xD1
 //命令1 发送 采样日期  Result.Date
 
-#define Z_CMD2 0xD2
+#define Z_CMD2_TIME 0xD2
 //命令2 发送 采样时间  Result.Time
 
-#define Z_CMD3 0xD3
+#define Z_CMD3_TEMPERATURE 0xD3
 //命令3 发送 温度
 
-#define Z_CMD4 0xD4
+#define Z_CMD4_WS 0xD4
 //命令4 发送风速
 
-#define Z_CMD5 0xD5
+#define Z_CMD5_WCI 0xD5
 //命令5 发送WCI
 
-#define Z_CMD6 0xD6
+#define Z_CMD6_ETC 0xD6
 //命令6 发送ETC
 
-#define Z_CMD7 0xD7
+#define Z_CMD7_TEQ 0xD7
 //命令7 发送TEQ
 
-#define Z_CMD8 0xD8
+#define Z_CMD8_OTHER 0xD8
 //命令8 发送冻伤危害性和轻、重、中四个字节的数据
+
+#define Z_CMD9_SINGLE 0xD9
+//命令09 单次检测
+
+#define Z_CMD8_CYCLE 0xDA
+//命令10 循环检测
+
+#define Z_CMD8_STOP 0xDB
+//命令11 中止检测
+
+#define Z_CMD8_SYNC 0xDC
+//命令12 同步时钟
+
+#define Z_CMD8_GET_DATA 0xDD
+//命令13 请求数据
+
+#define Z_CMD9_SET_STORAGE 0xDE
+//命令9 设置存储位置
 
 struct buffer_struct Rec;
 //缓存池 Buf[100] ;
@@ -177,57 +195,73 @@ unsigned char RecDeal( void )
          case Z_CMD0 :  //发送设备信息
 		 Send_string((char *)devicename,Z_CMD0,sizeof(devicename));
 		 RecRemove(12);
-	     return 0xD0;  //发送完成 返回成功
+	     return Z_CMD0;  //发送完成 返回成功
 		 break ;
   		
-		 case Z_CMD1 :  //发送日期
-		 Send_string(res.Date, Z_CMD1, 9);
-		 return 0xD1;  //发送完成 返回成功
+		 case Z_CMD1_DATE :  //发送日期
+		 Send_string(res.Date, Z_CMD1_DATE, 9);
+		 return Z_CMD1_DATE;  //发送完成 返回成功
 		 break ;	
 		 
-		 case Z_CMD2 :  //发送Time
-		 Send_string(res.Time, Z_CMD2, 10);
-		 return 0xD2;  //发送完成 返回成功
+		 case Z_CMD2_TIME :  //发送Time
+		 Send_string(res.Time, Z_CMD2_TIME, 10);
+		 return Z_CMD2_TIME;  //发送完成 返回成功
 		 break ;	
 		 
-		 case Z_CMD3 :  //发送温度
-		 Send_string(res.TempChar, Z_CMD3, 6);
-		 return 0xD3;  //发送完成 返回成功
+		 case Z_CMD3_TEMPERATURE :  //发送温度
+		 Send_string(res.TempChar, Z_CMD3_TEMPERATURE, 6);
+		 return Z_CMD3_TEMPERATURE;  //发送完成 返回成功
 		 break ;	
 		 
-		 case Z_CMD4 :  //发送WSChar
-		 Send_string(res.WSChar, Z_CMD4, 5);
-		 return 0xD4;  //发送完成 返回成功
+		 case Z_CMD4_WS :  //发送WSChar
+		 Send_string(res.WSChar, Z_CMD4_WS, 5);
+		 return Z_CMD4_WS;  //发送完成 返回成功
 		 break ;			 
 		 
-		 case Z_CMD5 :  //发送WCIChar
-		 Send_string(res.WCIChar, Z_CMD5 ,8);
-		 return 0xD5;  //发送完成 返回成功
+		 case Z_CMD5_WCI :  //发送WCIChar
+		 Send_string(res.WCIChar, Z_CMD5_WCI ,8);
+		 return Z_CMD5_WCI;  //发送完成 返回成功
 		 break ;	
 		 
-		 case Z_CMD6 :  //ECTChar
-		 Send_string(res.ECTChar, Z_CMD6 ,6);
-		 return 0xD6;  //发送完成 返回成功
+		 case Z_CMD6_ETC :  //ECTChar
+		 Send_string(res.ECTChar, Z_CMD6_ETC ,6);
+		 return Z_CMD6_ETC;  //发送完成 返回成功
 		 break ;		
 		 
-		 case Z_CMD7 :  //发送TeqCharres.TeqChar
-		 Send_string(res.TeqChar, Z_CMD7 ,6);
-		 return 0xD7;  //发送完成 返回成功
+		 case Z_CMD7_TEQ :  //发送TeqCharres.TeqChar
+		 Send_string(res.TeqChar, Z_CMD7_TEQ ,6);
+		 return Z_CMD7_TEQ;  //发送完成 返回成功
 		 break ;	 
 		 
-		 case Z_CMD8 :  //发送日期
-		 //buf[0]= res.WeiHai + 0x30;
-		 //buf[1]= res.LowLabor + 0x30;
-		 //buf[2]= res.MidLabor + 0x30;
-		 //buf[3]= res.HighLabor + 0x30;
-		 buf[0]= 0 + 0x30;
-		 buf[1]= 2 + 0x30;
-		 buf[2]= 4 + 0x30;
-		 buf[3]= 7 + 0x30;
+		 case Z_CMD8_OTHER :  //发送日期
+		 buf[0]= res.WeiHai + 0x30;
+		 buf[1]= res.LowLabor + 0x30;
+		 buf[2]= res.MidLabor + 0x30;
+		 buf[3]= res.HighLabor + 0x30;
 		 buf[4]= 0;
-		 Send_string(buf, Z_CMD8, 4);
-		 return 0xD8;  //发送完成 返回成功
+		 Send_string(buf, Z_CMD8_OTHER, 4);
+		 return Z_CMD8_OTHER;  //发送完成 返回成功
 		 break ;
+		 
+		 case Z_CMD9_SINGLE:
+		 
+		 break;
+		 
+		 case Z_CMD8_CYCLE:
+		 break;
+		 
+		 case Z_CMD8_STOP:
+		 break;
+		 
+		 case Z_CMD8_SYNC:
+		 break;
+		 
+		 case Z_CMD8_GET_DATA:
+		 break;
+		 
+		 case Z_CMD9_SET_STORAGE:
+		 break;
+		 
 		 default:    
 	     return 0xff;			   
      }
@@ -236,6 +270,7 @@ unsigned char RecDeal( void )
   RecRemove(1);  //丢弃帧头
   return 0xff;
  }
+return 0xff;
 }
 void Send_string(char *buf, unsigned char cmd, unsigned char MaxLen){
 	 char i = 0;
@@ -286,19 +321,23 @@ void Send_bin(char *buf, unsigned char cmd, unsigned char buf_len){
 */
 void zigbee_send_date(void){
 	char buf[5];
-    Send_string(res.Date, Z_CMD1, 9);
-	Send_string(res.Time, Z_CMD2, 10);
-	Send_string(res.TempChar, Z_CMD3, 6);
-	Send_string(res.WSChar, Z_CMD4, 5);
-	Send_string(res.WCIChar, Z_CMD5 ,8);
-	Send_string(res.ECTChar, Z_CMD6 ,6);
-	Send_string(res.TeqChar, Z_CMD7 ,6);
+    Send_string(res.Date, Z_CMD1_DATE, 9);
+	Send_string(res.Time, Z_CMD2_TIME, 10);
+	Send_string(res.TempChar, Z_CMD3_TEMPERATURE, 6);
+	Send_string(res.WSChar, Z_CMD4_WS, 5);
+	Send_string(res.WCIChar, Z_CMD5_WCI ,8);
+	Send_string(res.ECTChar, Z_CMD6_ETC ,6);
+	Send_string(res.TeqChar, Z_CMD7_TEQ ,6);
 	
-	buf[0]= 1 + 0x30;
-	buf[1]= 2 + 0x30;
-	buf[2]= 1 + 0x30;
-	buf[3]= 1 + 0x30;
+	buf[0]= Result.WeiHai + 0x30;
+	buf[1]= Result.LowLabor + 0x30;
+	buf[2]= Result.MidLabor + 0x30;
+	buf[3]= Result.HighLabor + 0x30;
 	buf[4]= 0;
-	Send_string(buf, Z_CMD8, 5);
+	Send_string(buf, Z_CMD8_OTHER, 5);
 	return ;
+}
+
+void zigbee_send_id(void){
+	 Send_string((char *)devicename,Z_CMD0,sizeof(devicename));
 }

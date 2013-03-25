@@ -1,6 +1,5 @@
 [Files]
-..\software_src\config.h
-..\software_src\delay.h
+..\software_src\main.c
 ..\software_src\diskio.c
 ..\software_src\diskio.h
 ..\software_src\ff.c
@@ -9,12 +8,14 @@
 ..\software_src\integer.h
 ..\software_src\sd.h
 ..\software_src\delay.c
-..\software_src\main.c
 ..\software_src\sd.c
 ..\software_src\gui.c
 ..\software_src\gui.h
 ..\software_src\zigbee.c
 ..\software_src\zigbee.h
+..\software_src\config.h
+..\software_src\delay.h
+..\software_src\main.h
 [Headers]
 [Documents]
 [hal]
@@ -34,5 +35,3 @@
 ..\software_src\ds1302.c
 ..\software_src\key.h
 ..\software_src\key.c
-..\software_src\powercheck.h
-..\software_src\main.h

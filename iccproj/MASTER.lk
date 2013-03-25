@@ -1,1 +1,1 @@
-diskio.o ff.o delay.o main.o sd.o gui.o zigbee.o usart.o SPI.o lcd.o relay.o beep.o DS18B20_driver.o ds1302.o key.o 
+main.o diskio.o ff.o delay.o sd.o gui.o zigbee.o usart.o SPI.o lcd.o relay.o beep.o DS18B20_driver.o ds1302.o key.o 

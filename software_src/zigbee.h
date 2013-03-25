@@ -27,4 +27,5 @@ unsigned char RecDeal( void );
 void Send_string(char *buf, unsigned char cmd, unsigned char MaxLen);
 //void Send_bin(char *buf, unsigned char cmd, unsigned char buf_len);
 void zigbee_send_date(void);
+void zigbee_send_id(void); //·¢ËÍ±¾»úID
 #endif
