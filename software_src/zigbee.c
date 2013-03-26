@@ -79,19 +79,19 @@ const char deviceId = 0xB6;//设备ID
 #define Z_CMD9_SINGLE 0xD9
 //命令09 单次检测
 
-#define Z_CMD8_CYCLE 0xDA
+#define Z_CMD10_CYCLE 0xDA
 //命令10 循环检测
 
-#define Z_CMD8_STOP 0xDB
+#define Z_CMD11_STOP 0xDB
 //命令11 中止检测
 
-#define Z_CMD8_SYNC 0xDC
+#define Z_CMD12_SYNC 0xDC
 //命令12 同步时钟
 
-#define Z_CMD8_GET_DATA 0xDD
+#define Z_CMD13_GET_DATA 0xDD
 //命令13 请求数据
 
-#define Z_CMD9_SET_STORAGE 0xDE
+#define Z_CMD14_SET_STORAGE 0xDE
 //命令9 设置存储位置
 
 struct buffer_struct Rec;
@@ -244,22 +244,26 @@ unsigned char RecDeal( void )
 		 break ;
 		 
 		 case Z_CMD9_SINGLE:
-		 
+		 	  config.comCmd = 0x01; //sigle——check
 		 break;
 		 
-		 case Z_CMD8_CYCLE:
+		 case Z_CMD10_CYCLE:
+		 	  config.comCmd = 0x02; //cycle check.
+			  
+//			  config.checkDeltaTime
 		 break;
 		 
-		 case Z_CMD8_STOP:
+		 case Z_CMD11_STOP:
+		      config.comCmd = 0x03; //stop check 
 		 break;
 		 
-		 case Z_CMD8_SYNC:
+		 case Z_CMD12_SYNC:
 		 break;
 		 
-		 case Z_CMD8_GET_DATA:
+		 case Z_CMD13_GET_DATA:
 		 break;
 		 
-		 case Z_CMD9_SET_STORAGE:
+		 case Z_CMD14_SET_STORAGE:
 		 break;
 		 
 		 default:    

@@ -25,6 +25,7 @@ void initDevices(void){
 	 uart1_init();
 	 LCD_INT();delayms(50);LCD_INT();
 	 LCD_SW(1);
+	 config.comCmd = 0; //无上位机命令
 	 config.THRESHOLD_delta_sec=60; //一次检测用时
 	 config.heatThreshold = 5; //继电器开启温度 
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
@@ -37,6 +38,7 @@ void initDevices(void){
 	 config.heatThreshold = 20; //继电器开启温度 
 	 config.checkDeltaTime=5;  //自动检测模式 时间间隔	 
 	 #endif
+	 
 	 SEI();
 }
 void timer1_init(void)
@@ -64,7 +66,7 @@ void main(void){
 	 #endif
 	 //selfTest();
 	 GUI_welcome();
-	 /*
+	 /* //FOR DEBUG
 	 while(alwaysCheck())
 	 {
 	   delayms(100);dateRefresh(1);StructToChar();
@@ -74,6 +76,7 @@ void main(void){
 	  */
 	 while(alwaysCheck()){
 	    tmp=GUI_mainmeu();
+		
 		switch(tmp){
 		    case 3 : GUI_check(); break; 
 			case 4 : GUI_set_time(); break ;
@@ -87,23 +90,25 @@ void main(void){
 }
 char alwaysCheck(void)
 {
- static unsigned long last=0;
+ static unsigned long last5s=0;
+ static unsigned long next_sample_time = 0;
  float temp;
  RecDeal(); //zigbee data deal
  //间隔5s 背温检测,发送本机ID
- if(config.now>last)
+ if(config.now>last5s)
  {   
- 	 last=config.now+5;
+ 	 last5s=config.now+5;
 	 zigbee_send_id(); //发送本机ID
      temp= readWithoutDelay(INSIDE_SENSOR);
      if (temp>config.heatThreshold) {
  	     RELAY_OFF(); //debug("off=",(int)temp);
 		 return 1;
- 	  }
-      else  {
+ 	 }
+     else  {
    	     RELAY_ON();//debug("on=",(int)temp);
-	  } 
+	 } 
  }
+ 
  
  return 1;
 }

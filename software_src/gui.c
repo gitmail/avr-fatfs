@@ -32,7 +32,8 @@ const char str_blank[]="----------------";
 //#define LEDON   PORTC&=~(1<<7)					   
 //#define LEDOFF  PINC|=(1<<7)
 char GUI_date[17]="09月19日18:00:00\0";
-
+#define SW_ON 1
+#define SW_OFF 0
 // 主菜单
 unsigned char GUI_mainmeu( void ){
  	unsigned char key=0; //init= nokey
@@ -53,6 +54,11 @@ unsigned char GUI_mainmeu( void ){
 	Set_White(1,3,8,1);
 	Set_White(1,4,8,1);
 	set_white_n(select,0);
+	//处理上位机自动检测命令
+	if(config.comCmd == 0x01 || config.comCmd == 0x02) {
+	    return 3; //goto check();
+	}
+		
 	while(alwaysCheck())
 	{
 	 	key=kbscan();
@@ -93,28 +99,46 @@ void GUI_check(void){
 	char windcounter=0;
 	unsigned long next_step_time=0;
 	char selectCheckMode=config.autocheck; //自动检测开关
+	
 RE_IN:
 	key=0;
 	page=0;
 	is_on=0;
 	windcounter=0;
 	next_step_time=0;
-	
 	dateRefresh(1);
-	LCD_CLR();
-	LCD_const_disp(1,1,"菜单/ 检测");
-	LCD_const_disp(2,3,"自动");		 
-	LCD_const_disp(3,3,"手动");
-	if(selectCheckMode==1) {
-	    Set_White(1,2,8,0);
-		Set_White(1,3,8,1);
-	}
-	else {
-		 Set_White(1,2,8,1);
-		 Set_White(1,3,8,0);
-	}
+if(config.comCmd == 0x02 && config.checkDeltaTime > 5) {  //循环检测 且 间隔>5
+	 config.autocheck = SW_ON;
+	 LCD_CLR();
+	 LCD_const_disp(1,1,"收到命令：");
+	 LCD_const_disp(2,1,"  循环检测");
+	 LCD_const_disp(3,1,"检测间隔(s):");
+	 LCD_print4num(4,7,config.checkDeltaTime);
+	 delayms(500);
+}
+else if(config.comCmd == 0x01 || config.comCmd == 0x02){  //单次检测 或（循环检测但不满足检测间隔）
+	config.autocheck = SW_OFF;
+	 LCD_CLR();
+	 LCD_const_disp(1,1,"收到命令：");
+	 LCD_const_disp(2,1,"  单次检测");
+	 config.comCmd = 0x00; //单次检测情况下检测设置完成则清除检测标志
+	 delayms(500); 
+}
+else {
+	      LCD_CLR();
+		  LCD_const_disp(1,1,"菜单/ 检测");
+		  LCD_const_disp(2,3,"自动");		 
+		  LCD_const_disp(3,3,"手动");
+		  if(selectCheckMode==SW_ON) {
+	          Set_White(1,2,8,0);
+			  Set_White(1,3,8,1);
+		  }
+		  else {
+		      Set_White(1,2,8,1);
+		      Set_White(1,3,8,0);
+		  }
 	
-//<<菜单/检测/手（自）动>>
+    //<<菜单/检测/手（自）动>>
 	while(alwaysCheck()){
 	 	key=kbscan();
 		dateRefresh(0); //只刷新后台时间
@@ -145,6 +169,8 @@ RE_IN:
 		}
 		key=0;
 	} //end of while
+}//end if	
+
     //自动开启检测
 	dateRefresh(0);
 	is_on =1 ;
@@ -152,10 +178,9 @@ RE_IN:
 	Result.TempChar[0]=0; //清除上次结果
 	Result.WSChar[0]=0;
 	while(alwaysCheck()){
-		key=kbscan();
 		dateRefresh(0); //只刷新后台时间
 		if(key != 0) beep(0,1);
-		if(key==right){	//右键 退出
+		if(key==right || config.comCmd == 0x03){	//右键 退出
 		    is_on=0;
 			LCD_CLR();
 		 	LCD_Init();	  
@@ -166,6 +191,7 @@ RE_IN:
 		 	LCD_const_disp(4,8,".."); 	
 		 	delayms(500);
 		 	LCD_CLR();
+			config.comCmd = 0;//清除自动检测命令
 		 	goto RE_IN;
 		}
 		if(is_on==1){ 

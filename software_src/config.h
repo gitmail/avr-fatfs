@@ -84,11 +84,11 @@ struct DATA {
 		char readMode; //读取数据间隔， 0=最后一次 1=按顺序d
 		char heatThreshold; //加热门限
 		char autoSend;  //自动发送开关
-		char ComCmd; //上位机命令  
-								// =0： 无命令
-								// =1： 执行一次检测
-								// =2： 以checkDeltaTime间隔循环检测
-								// =3： 停止检测
+		char comCmd; //上位机命令  
+								// =0x00： 无命令
+								// =0x01： 执行一次检测
+								// =0x02： 以checkDeltaTime间隔循环检测
+								// =0x03： 停止检测
 		
   };
  #define READ_MODE_LAST 0
