@@ -49,18 +49,21 @@ unsigned char GUI_mainmeu( void ){
 	LCD_const_disp(2,1,"  ¼ì²â  Ê±ÖÓµ÷Õû");
 	LCD_const_disp(3,1,"  ²éÑ¯  Êı¾İ´«Êä");
 	LCD_const_disp(4,1,"  ³õÊ¼»¯");
+	//LCD_print2num(4,8,config.comCmd);
 	Set_White(1,1,8,1);
 	Set_White(1,2,8,1);
 	Set_White(1,3,8,1);
 	Set_White(1,4,8,1);
 	set_white_n(select,0);
 	//´¦ÀíÉÏÎ»»ú×Ô¶¯¼ì²âÃüÁî
-	if(config.comCmd == 0x01 || config.comCmd == 0x02) {
-	    return 3; //goto check();
-	}
+
 		
 	while(alwaysCheck())
 	{
+		if(config.comCmd == 0x01 || config.comCmd == 0x02) {
+	        
+			return 3; //goto check();
+		}
 	 	key=kbscan();
 		dateRefresh(1); //¸üĞÂÏµÍ³Ê±¼ä
 		LCD_const_disp(1,1,GUI_get_date()); //ÏÔÊ¾Ê±¼ä
@@ -107,14 +110,15 @@ RE_IN:
 	windcounter=0;
 	next_step_time=0;
 	dateRefresh(1);
-if(config.comCmd == 0x02 && config.checkDeltaTime > 5) {  //Ñ­»·¼ì²â ÇÒ ¼ä¸ô>5
-	 config.autocheck = SW_ON;
+if(config.comCmd == 0x02 && config.checkDelta > 60) {  //Ñ­»·¼ì²â ÇÒ ¼ä¸ô>60s
+	 config.autocheck = 0x02;
 	 LCD_CLR();
 	 LCD_const_disp(1,1,"ÊÕµ½ÃüÁî£º");
 	 LCD_const_disp(2,1,"  Ñ­»·¼ì²â");
 	 LCD_const_disp(3,1,"¼ì²â¼ä¸ô(s):");
-	 LCD_print4num(4,7,config.checkDeltaTime);
-	 delayms(500);
+	 LCD_print4num(4,2,config.checkDelta/10000);
+	 LCD_print4num(4,4,config.checkDelta%10000);
+	 delayms(1000);
 }
 else if(config.comCmd == 0x01 || config.comCmd == 0x02){  //µ¥´Î¼ì²â »ò£¨Ñ­»·¼ì²âµ«²»Âú×ã¼ì²â¼ä¸ô£©
 	config.autocheck = SW_OFF;
@@ -122,9 +126,10 @@ else if(config.comCmd == 0x01 || config.comCmd == 0x02){  //µ¥´Î¼ì²â »ò£¨Ñ­»·¼ì²
 	 LCD_const_disp(1,1,"ÊÕµ½ÃüÁî£º");
 	 LCD_const_disp(2,1,"  µ¥´Î¼ì²â");
 	 config.comCmd = 0x00; //µ¥´Î¼ì²âÇé¿öÏÂ¼ì²âÉèÖÃÍê³ÉÔòÇå³ı¼ì²â±êÖ¾
-	 delayms(500); 
+	 delayms(1000); 
 }
-else {
+else {	  
+
 	      LCD_CLR();
 		  LCD_const_disp(1,1,"²Ëµ¥/ ¼ì²â");
 		  LCD_const_disp(2,3,"×Ô¶¯");		 
@@ -140,6 +145,10 @@ else {
 	
     //<<²Ëµ¥/¼ì²â/ÊÖ£¨×Ô£©¶¯>>
 	while(alwaysCheck()){
+		if(config.comCmd!=0 ){
+			if(config.comCmd == 3) config.comCmd =0;				
+		  	return ;
+		}
 	 	key=kbscan();
 		dateRefresh(0); //Ö»Ë¢ĞÂºóÌ¨Ê±¼ä
 		//ÉÏ¼ü¶Ì°´ Ñ¡Ôñ
@@ -167,10 +176,10 @@ else {
 		if(key == right) {
 			return ;		
 		}
-		key=0;
+		key=0;	
 	} //end of while
 }//end if	
-
+	
     //×Ô¶¯¿ªÆô¼ì²â
 	dateRefresh(0);
 	is_on =1 ;
@@ -179,6 +188,7 @@ else {
 	Result.WSChar[0]=0;
 	while(alwaysCheck()){
 		dateRefresh(0); //Ö»Ë¢ĞÂºóÌ¨Ê±¼ä
+		key=kbscan();
 		if(key != 0) beep(0,1);
 		if(key==right || config.comCmd == 0x03){	//ÓÒ¼ü ÍË³ö
 		    is_on=0;
@@ -205,8 +215,8 @@ else {
 				}
 				if(page == 0 ){
 				
-				    LCD_const_disp(4,1,"ÕıÔÚ¼ì²â");
-					LCD_print4num(4,5,config.time1-config.now);
+				    LCD_const_disp(4,1,"ÕıÔÚ¼ì²â£º");
+					LCD_print4num(4,6,config.time1-config.now);
 					LCD_const_disp(2,6,"      ");
 					LCD_const_disp(3,6,"      ");
 				}
@@ -227,6 +237,7 @@ else {
 				is_on=0; //ÇĞ»»µ½·Ç¼ì²â×´Ì¬
 				next_step_time=config.now+config.checkDeltaTime;//×Ô¶¯·­Ò³Ê±¼ä¸üĞÂ
 				page=0;
+				if(config.autocheck == 0) config.comCmd = 0;
 		   }
 		}
 		else { //is_on == 0 ·Ç¼ì²â×´Ì¬ ÊÖ¶¯·­Ò³/×Ô¶¯·­Ò³
@@ -235,7 +246,7 @@ else {
 			if(page == 0 ){
 				
 				    LCD_const_disp(4,1,"Íê³É¼ì²â        ");
-					if(config.autocheck == 1){
+					if(config.autocheck >= 1){
 					    LCD_const_disp(4,7,"×Ô¶¯");
 					}
 					else {
@@ -244,6 +255,7 @@ else {
 					
 				}
 						//ÊÖ¶¯·­Ò³ 
+			
 			if(key==up){ //ÉÏ¼ü : Ò³Ãæ¼õ 
 		        if(page>0) page--;
 				else{
@@ -266,29 +278,46 @@ else {
 			//LCD_print2num(4,1,page);
 			//LCD_print4num(4,3,config.now);
 			//LCD_print4num(4,6,next_step_time);
-			if( config.autocheck == 1 ){  //Èç¹û¿ªÆô×Ô¶¯·­Ò³
-			      if(config.now >= next_step_time || page >=6 )	{
+			if( config.autocheck == 2  ){ 
+			      if(config.now >= next_step_time && page <5 )	{   //×Ô¶¯·­Ò³
 				      next_step_time = config.now + config.checkDeltaTime;
 					  page++;
 					  LCD_CLR(); 
 					  key=0;
-				  }  
+				  }
 			}
-			if( page>=6 || key == left){
-					      //·­µ½×îºóÒ³£¬Ò³ÃæÇåÁã¿ªÆôÏÂ´Î¼ì²â
-					      page = 0;
-						  dateRefresh(1); //Ë¢ĞÂÊ±¼ä
-						  is_on =1 ; //¿ªÆô¼ì²â
-						  config.time1=config.now+config.THRESHOLD_delta_sec; //¸üĞÂÏÂ´Î¼ì²âÊ±¼ä
-						  Result.TempChar[0]=0; //Çå³ıÉÏ´Î½á¹û
-						  Result.WSChar[0]=0;
-					   	  LCD_CLR();  
-					  }
+			else if( config.autocheck == 1 ){
+				 if(config.now >= next_step_time || page >=6 )	{   //×Ô¶¯·­Ò³
+				      next_step_time = config.now + config.checkDeltaTime;
+					  page++;
+					  LCD_CLR(); 
+					  key=0;
+				  }
+			}
+			if(config.autocheck==2 && page==5 ){
+				 LCD_const_disp(4,1,"¾àÏÂ´Î:");
+				 LCD_print4num(4,5,(config.checkDelta+config.time1-config.now)/10000);
+				 LCD_print4num(4,7,(config.checkDelta+config.time1-config.now)%10000);
+			}
+			if(config.autocheck == 0 && config.comCmd !=0) return;
+			
+			if( page>=6 || key == left ||(config.comCmd == 0x02 && config.now > config.time1+config.checkDelta) ){
+			    //·­µ½×îºóÒ³£¨ÇÒ´¦ÓÚ×Ô¶¯¼ì²âÄ£Ê½£©»ò ×ó¼ü°´ÏÂ »ò £¨×Ô¶¯¼ì²âÄ£Ê½ÏÂÇÒÏÂ´Î¼ì²âÊ±¼äÒÑµ½£© 
+				// Ò³ÃæÇåÁã¿ªÆôÏÂ´Î¼ì²â
+				page = 0;
+				dateRefresh(1); //Ë¢ĞÂÊ±¼ä
+				is_on =1 ; //¿ªÆô¼ì²â
+				config.time1=config.now+config.THRESHOLD_delta_sec; //¸üĞÂÏÂ´Î¼ì²â·çËÙ¼ÆÊıÆ÷Í£Ö¹Ê±¼ä
+				Result.TempChar[0]=0; //Çå³ıÉÏ´Î½á¹û
+				Result.WSChar[0]=0;
+				LCD_CLR();
+				key = 0;  
+			}
 				         
 				
 
 		} 
-		
+		  				 
 	    delayms(10); 
 	}//end while
 }//end function

@@ -22,3 +22,13 @@ BEEP_OFF(); delayms(50);
 }
 
 }
+void beep_rec(void){
+	unsigned int i;
+	for(i=0; i<4;i++){
+	   delayms(4);
+	   BEEP_ON();
+	   delayms(1);
+	   BEEP_OFF();  
+	   
+	}
+}

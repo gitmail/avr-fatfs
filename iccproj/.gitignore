@@ -3,3 +3,11 @@ BACKUP
 *.o
 *.lis
 
+DS18B20_driver.lis SPI.lis beep.lis delay.lis diskio.lis ds1302.lis ff.lis gui.lis key.lis lcd.lis main.lis relay.lis sd.lis usart.lis zigbee.lis
+DS18B20_driver.o SPI.o beep.o delay.o diskio.o ds1302.o ff.o gui.o key.o lcd.o main.o relay.o sd.o usart.o zigbee.o
+BACKUP
+MASTER.dbg
+MASTER.lst
+MASTER.mp
+*.1k
+MASTER.lk

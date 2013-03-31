@@ -23,19 +23,19 @@ const char CommonId = 0xFF; //从设备公共ID
 char devicename[8] = {"DEV00001"};//设备名称
 const char deviceId = 0xB1;//设备ID		
 #elif  _DEVICE_ID == 2 
-char devicename[8] = {"DEV000002"};//设备名称
+char devicename[8] = {"DEV00002"};//设备名称
 const char deviceId = 0xB2;//设备ID		
 #elif  _DEVICE_ID == 3  
-char devicename[8] = {"DEV000003"};//设备名称
+char devicename[8] = {"DEV00003"};//设备名称
 const char deviceId = 0xB3;//设备ID		
 #elif  _DEVICE_ID == 4  
-char devicename[8] = {"DEV000004"};//设备名称
+char devicename[8] = {"DEV00004"};//设备名称
 const char deviceId = 0xB4;//设备ID		
 #elif  _DEVICE_ID == 5  
-char devicename[8] = {"DEV000005"};//设备名称
+char devicename[8] = {"DEV00005"};//设备名称
 const char deviceId = 0xB5;//设备ID		
 #elif  _DEVICE_ID == 6  
-char devicename[8] = {"DEV000006"};//设备名称
+char devicename[8] = {"DEV00006"};//设备名称
 const char deviceId = 0xB6;//设备ID		
 #endif
 
@@ -91,8 +91,6 @@ const char deviceId = 0xB6;//设备ID
 #define Z_CMD13_GET_DATA 0xDD
 //命令13 请求数据
 
-#define Z_CMD14_SET_STORAGE 0xDE
-//命令9 设置存储位置
 
 struct buffer_struct Rec;
 //缓存池 Buf[100] ;
@@ -161,6 +159,16 @@ char CheckCRC(unsigned char i)
 
 }
 #define res Result
+#define REC_CMD RecRead(4)
+#define STORAGE_MODE RecRead(5)
+#define REC_BYTE1 RecRead(5)
+#define REC_BYTE2 RecRead(6)
+#define REC_BYTE3 RecRead(7)
+#define REC_BYTE4 RecRead(8)
+#define REC_BYTE5 RecRead(9)
+#define REC_BYTE6 RecRead(10)
+
+
  //1 找头 2找长度 3计算尾 4找尾 5核对校验码 6分析命令 7执行操作
 unsigned char RecDeal( void )
 { 
@@ -191,13 +199,13 @@ unsigned char RecDeal( void )
  }
  else if((CheckCRC(FRAME_LEN)==1))   //校验通过
  {
-     switch(RecRead(4)){
+     switch(REC_CMD){
          case Z_CMD0 :  //发送设备信息
 		 Send_string((char *)devicename,Z_CMD0,sizeof(devicename));
-		 RecRemove(12);
+		 RecRemove(12);beep_rec();
 	     return Z_CMD0;  //发送完成 返回成功
 		 break ;
-  		
+  		/*此段命令上位机不会发出，所以先注释掉，以备后用
 		 case Z_CMD1_DATE :  //发送日期
 		 Send_string(res.Date, Z_CMD1_DATE, 9);
 		 return Z_CMD1_DATE;  //发送完成 返回成功
@@ -233,7 +241,7 @@ unsigned char RecDeal( void )
 		 return Z_CMD7_TEQ;  //发送完成 返回成功
 		 break ;	 
 		 
-		 case Z_CMD8_OTHER :  //发送日期
+		 case Z_CMD8_OTHER :  //发送冻伤危害性 劳动强度提示信息等
 		 buf[0]= res.WeiHai + 0x30;
 		 buf[1]= res.LowLabor + 0x30;
 		 buf[2]= res.MidLabor + 0x30;
@@ -242,28 +250,41 @@ unsigned char RecDeal( void )
 		 Send_string(buf, Z_CMD8_OTHER, 4);
 		 return Z_CMD8_OTHER;  //发送完成 返回成功
 		 break ;
-		 
-		 case Z_CMD9_SINGLE:
+		 */
+		 case Z_CMD9_SINGLE://单次检测
 		 	  config.comCmd = 0x01; //sigle——check
-		 break;
-		 
-		 case Z_CMD10_CYCLE:
-		 	  config.comCmd = 0x02; //cycle check.
+			  config.Sd = STORAGE_MODE;
+			  RecRemove(12);beep_rec();
 			  
-//			  config.checkDeltaTime
 		 break;
 		 
-		 case Z_CMD11_STOP:
-		      config.comCmd = 0x03; //stop check 
+		 case Z_CMD10_CYCLE: //循环检测
+		 	  config.comCmd = 0x02; //cycle check.
+			  config.Sd = STORAGE_MODE;
+			  config.checkDelta = REC_BYTE2*3600 + REC_BYTE3*60 + REC_BYTE4 ;
+		 	  RecRemove(12);beep_rec();
 		 break;
 		 
-		 case Z_CMD12_SYNC:
+		 case Z_CMD11_STOP: //停止检测
+		      config.comCmd = 0x03; //stop check
+			  config.checkDelta = 0;
+		 	  RecRemove(12);beep_rec();
 		 break;
 		 
-		 case Z_CMD13_GET_DATA:
+		 case Z_CMD12_SYNC: //同步时钟  上位机传来bcd格式 时间
+		 	  time_buf[1] = REC_BYTE1; //年
+			  time_buf[2] = REC_BYTE2; //月
+			  time_buf[3] = REC_BYTE3; //日 
+			  time_buf[4] = REC_BYTE4; //时
+			  time_buf[5] = REC_BYTE5; //分
+			  time_buf[6] = REC_BYTE6; //秒
+			  ds1302_write_time();//写入时间
+		 	  RecRemove(12);beep_rec();
+			  						   
 		 break;
 		 
-		 case Z_CMD14_SET_STORAGE:
+		 case Z_CMD13_GET_DATA: //获得从机数据
+		 	  RecRemove(12);beep_rec();
 		 break;
 		 
 		 default:    

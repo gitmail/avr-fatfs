@@ -27,5 +27,5 @@
 
 
 void beep(unsigned char long_beep,unsigned char short_beep);
-
+void beep_rec(void);
 #endif

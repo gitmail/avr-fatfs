@@ -1,5 +1,7 @@
 #include "config.h"
 #define  N_per_Second  (2.72*60)
+//#define _FOR_FAST_TEST
+
 const char tab[]="\t\0";
 const char enter[]="\n\0";
 char buffer[512];
@@ -26,9 +28,11 @@ void initDevices(void){
 	 LCD_INT();delayms(50);LCD_INT();
 	 LCD_SW(1);
 	 config.comCmd = 0; //无上位机命令
+	 config.last5s=0; //5s定时器
 	 config.THRESHOLD_delta_sec=60; //一次检测用时
 	 config.heatThreshold = 5; //继电器开启温度 
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
+	 config.checkDelta = 0;     //
 	 config.autocheck=1;        //自动检测开关
 	 config.readMode = 0;      //读数据模式
 	 config.autoSend = 1; //zigbee发送开关，不为0时，使能发送
@@ -66,17 +70,16 @@ void main(void){
 	 #endif
 	 //selfTest();
 	 GUI_welcome();
-	 /* //FOR DEBUG
+	/*   //FOR DEBUG
 	 while(alwaysCheck())
 	 {
 	   delayms(100);dateRefresh(1);StructToChar();
 	   check();
 	   zigbee_send_date();
 	 }
-	  */
+	 */
 	 while(alwaysCheck()){
 	    tmp=GUI_mainmeu();
-		
 		switch(tmp){
 		    case 3 : GUI_check(); break; 
 			case 4 : GUI_set_time(); break ;
@@ -90,14 +93,12 @@ void main(void){
 }
 char alwaysCheck(void)
 {
- static unsigned long last5s=0;
- static unsigned long next_sample_time = 0;
  float temp;
  RecDeal(); //zigbee data deal
  //间隔5s 背温检测,发送本机ID
- if(config.now>last5s)
+ if(config.now>config.last5s)
  {   
- 	 last5s=config.now+5;
+ 	 config.last5s=config.now+5;
 	 zigbee_send_id(); //发送本机ID
      temp= readWithoutDelay(INSIDE_SENSOR);
      if (temp>config.heatThreshold) {
