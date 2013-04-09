@@ -1,5 +1,5 @@
 #include "config.h"
-#define  N_per_Second  (2.72*60)
+#define  N_per_Second  (163.2)
 //#define _FOR_FAST_TEST
 
 const char tab[]="\t\0";
@@ -11,6 +11,7 @@ struct tm t;
 unsigned long now =0; 
 void debug(UINT8 *str,UINT8 val);
 void WriteSDFile(void);
+float Round(float x);
 struct CONFIG config;
 void initDevices(void){
      CLI();
@@ -324,9 +325,10 @@ void check( void )
  //读计数器1 此步需严格按手册进行。
  tmp=SREG;
  CLI();
- WScounter=TCNT1H*256+TCNT1L;
+ WScounter=TCNT1;
  SREG=tmp;
  SEI();
+ TCCR1B = 0x00; //关闭计数器
  //计算风速
  Result.WindSpeed=WScounter/N_per_Second;
  //四舍五入
