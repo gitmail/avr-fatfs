@@ -1,5 +1,6 @@
 #include "config.h"
-#define  N_per_Second  (163.2)
+#define  N_per_Second  (168.64)
+//=2.72*N_Seconds, now N=62。N_per_Second=62*2.72=168.64
 //#define _FOR_FAST_TEST
 
 const char tab[]="\t\0";
@@ -331,6 +332,26 @@ void check( void )
  TCCR1B = 0x00; //关闭计数器
  //计算风速
  Result.WindSpeed=WScounter/N_per_Second;
+ //风速修正
+ //将风速检测的值的使用做一调整，暂时做如下调整
+ //       风速V<3m/s时，V=V-0.1
+ //       3<V<13M/S时，V=V
+ //       13<=V<=16时，V=V+0.3
+ //       V>16时，V=V+0.6
+ //       用此结果进行显示、存储、代入公式计算。
+ if(Result.WindSpeed < 3) {
+     Result.WindSpeed = Result.WindSpeed - 0.1;
+ }
+ else if( Result.WindSpeed <13.0 && Result.WindSpeed >3 ) {
+ 	 ;//nothing to do
+ }
+ else if ( Result.WindSpeed >=13.0 && Result.WindSpeed<=16 )
+ {
+  	 Result.WindSpeed = Result.WindSpeed + 0.3; 
+ }else if(Result.WindSpeed > 16){
+ 	   Result.WindSpeed = Result.WindSpeed + 0.6;
+ }
+  
  //四舍五入
  Result.WindSpeed=Round(Result.WindSpeed);
   //温度
