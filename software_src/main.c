@@ -1,7 +1,7 @@
 #include "config.h"
 #define  N_per_Second  (168.64)
 //=2.72*N_Seconds, now N=62¡£N_per_Second=62*2.72=168.64
-//#define _FOR_FAST_TEST
+#define _FOR_FAST_TEST
 
 const char tab[]="\t\0";
 const char enter[]="\n\0";
