@@ -85,6 +85,7 @@ struct DATA {
 		char readMode; //读取数据间隔， 0=最后一次 1=按顺序d
 		char heatThreshold; //加热门限
 		char autoSend;  //自动发送开关
+		char is_lowpower;
 		char comCmd; //上位机命令  
 								// =0x00： 无命令
 								// =0x01： 执行一次检测

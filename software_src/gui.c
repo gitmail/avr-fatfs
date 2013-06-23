@@ -49,6 +49,7 @@ unsigned char GUI_mainmeu( void ){
 	LCD_const_disp(2,1,"  检测  时钟调整");
 	LCD_const_disp(3,1,"  查询  数据传输");
 	LCD_const_disp(4,1,"  初始化");
+	
 	//LCD_print2num(4,8,config.comCmd);
 	Set_White(1,1,8,1);
 	Set_White(1,2,8,1);
@@ -64,6 +65,14 @@ unsigned char GUI_mainmeu( void ){
 	        
 			return 3; //goto check();
 		}
+		
+		if(config.is_lowpower) {
+	        LCD_const_disp(4,6,"电量低"); //devicename[7] = 'F';// DDRC|=(1<<LED_PIN);LED_PORT |=  (1 << LED_PIN) ;
+		}
+		else{
+	   		LCD_const_disp(4,6,"      ");// devicename[7] = 'U'; DDRC|=(1<<LED_PIN);LED_PORT &= ~(1 << LED_PIN);
+		}
+		
 	 	key=kbscan();
 		dateRefresh(1); //更新系统时间
 		LCD_const_disp(1,1,GUI_get_date()); //显示时间

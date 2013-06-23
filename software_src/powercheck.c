@@ -1,34 +1,30 @@
 #include "config.h"
-/*继电器初始化
+/*电量检测初始化
 *设置端口
 *初始化关闭
 */
-void relay_init(void){
+void power_check_init(void){
 	
-		RELAY_DDR_SET() ;
-		RELAY_OFF();
-		//state.Relay = 0;
-	}	
+		POWER_DDR_SET()  ;
+		config.is_lowpower = 0;
+		return ;
+}	
 
 /*继电器控制
 *传入 ： 温度
 *传出 ： 当前继电器状态
 *
 */
-unsigned char  relay(int temp)
+void power_state_refresh(void)
 {
-	if(temp<HEAT_THRESHOLD)
-	{
-	 		RELAY_DDR_SET();
-			RELAY_ON();
-			//state.Relay = 1 ;
+ 	 //假设没电高电平 有电低电平
+    config.is_lowpower = POWER_PIN_READ();
+	config.is_lowpower = POWER_PIN_READ();
+	if(config.is_lowpower) {
+	    LED_ON();
 	}
-	else
-	{
-	 	RELAY_DDR_SET();
-		RELAY_OFF();
-		//state.Relay = 0 ;
-	}		
-	//return state.Relay;
-	return 0;
+	else {
+	    LED_OFF();
+	}
+	return ;
 }

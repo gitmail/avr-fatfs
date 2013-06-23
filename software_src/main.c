@@ -1,7 +1,7 @@
 #include "config.h"
 #define  N_per_Second  (168.64)
 //=2.72*N_Seconds, now N=62。N_per_Second=62*2.72=168.64
-#define _FOR_FAST_TEST
+//#define _FOR_FAST_TEST
 
 const char tab[]="\t\0";
 const char enter[]="\n\0";
@@ -9,11 +9,12 @@ char buffer[512];
 char TempChar[80]; //存放临时字串
 struct DATA Result;
 struct tm t;
-unsigned long now =0; 
-void debug(UINT8 *str,UINT8 val);
-void WriteSDFile(void);
-float Round(float x);
-struct CONFIG config;
+unsigned long now =0; //时间寄存器 单位S
+void debug(UINT8 *str,UINT8 val);//debug输出函数
+void WriteSDFile(void);//写SD卡
+float Round(float x); //四舍五入函数
+struct CONFIG config; //系统配置变量结构体
+
 void initDevices(void){
      CLI();
 	 DDRA=0XFF;
@@ -23,11 +24,12 @@ void initDevices(void){
 	 DDRC=0XFF;
 	 PORTC=0XFF;
 	 DDRG=0XFF;
-	 PORTG=0XFF;	 
-	 SPI_IO_Init(); 
-	 SD_Init();
-	 uart1_init();
-	 LCD_INT();delayms(50);LCD_INT();
+	 PORTG=0XFF;
+	 power_check_init(); 
+	 SPI_IO_Init(); //spi接口硬件初始化
+	 SD_Init();//sd卡初始化
+	 uart1_init();//通信用的UART为UART1
+	 LCD_INT();delayms(50);LCD_INT();//LCD初始化
 	 LCD_SW(1);
 	 config.comCmd = 0; //无上位机命令
 	 config.last5s=0; //5s定时器
@@ -39,6 +41,7 @@ void initDevices(void){
 	 config.readMode = 0;      //读数据模式
 	 config.autoSend = 1; //zigbee发送开关，不为0时，使能发送
 	 config.Sd = 1;      //Sd存储开关， 不为0时，使能存储
+	 config.is_lowpower = 0; //电池电量指示寄存器 is_lowpower !=0电量低。
 	 #ifdef _FOR_FAST_TEST
 	 config.THRESHOLD_delta_sec=5; //一次检测用时
 	 config.heatThreshold = 20; //继电器开启温度 
@@ -110,6 +113,7 @@ char alwaysCheck(void)
      else  {
    	     RELAY_ON();//debug("on=",(int)temp);
 	 } 
+	 power_state_refresh();
  }
  
  
