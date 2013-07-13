@@ -23,6 +23,8 @@ void initDevices(void){
 	 PORTB=0XFF; 	 
 	 DDRC=0XFF;
 	 PORTC=0XFF;
+	 DDRE=0XFF;
+	 PORTE=0XFF;
 	 DDRG=0XFF;
 	 PORTG=0XFF;
 	 power_check_init(); 
@@ -100,6 +102,8 @@ char alwaysCheck(void)
 {
  float temp;
  RecDeal(); //zigbee data deal
+  	 
+ power_state_refresh();
  //间隔5s 背温检测,发送本机ID
  if(config.now>config.last5s)
  {   
@@ -113,7 +117,6 @@ char alwaysCheck(void)
      else  {
    	     RELAY_ON();//debug("on=",(int)temp);
 	 } 
-	 power_state_refresh();
  }
  
  

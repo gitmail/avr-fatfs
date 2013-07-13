@@ -99,6 +99,7 @@ unsigned char GUI_mainmeu( void ){
 		 //beep(3,select);
 		 return select;
 		}
+		delayms(5);
     }
 	return 0xff; //error
 	

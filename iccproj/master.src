@@ -16,6 +16,8 @@
 ..\software_src\zigbee.h
 ..\software_src\delay.h
 ..\software_src\main.h
+..\software_src\powercheck.c
+..\software_src\powercheck.h
 [Headers]
 [Documents]
 [hal]

@@ -5,9 +5,8 @@
 */
 void power_check_init(void){
 	
-		POWER_DDR_SET()  ;
+		POWER_DDR_SET();
 		config.is_lowpower = 0;
-		return ;
 }	
 
 /*继电器控制
@@ -17,9 +16,10 @@ void power_check_init(void){
 */
 void power_state_refresh(void)
 {
- 	 //假设没电高电平 有电低电平
-    config.is_lowpower = POWER_PIN_READ();
-	config.is_lowpower = POWER_PIN_READ();
+ 	 //电池状态刷新 刷新依据：PINE_4没电低电平 有电高电平
+    //
+	config.is_lowpower = !POWER_PIN_READ();
+
 	if(config.is_lowpower) {
 	    LED_ON();
 	}
