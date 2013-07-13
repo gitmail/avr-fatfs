@@ -14,12 +14,12 @@
 #define RELAY_PORT_NUM	  5
 #define RELAY_DDR_SET() DDRC|=(1<<RELAY_PORT_NUM)
 
-#define RELAY_OFF()	RELAY_PORT &= ~(1 << RELAY_PORT_NUM)    /*拉低*/
-#define RELAY_ON() 	RELAY_PORT |=  (1 << RELAY_PORT_NUM)     /*拉高*/
+#define RELAY_ON()	RELAY_PORT &= ~(1 << RELAY_PORT_NUM)    /*拉低*/
+#define RELAY_OFF() 	RELAY_PORT |=  (1 << RELAY_PORT_NUM)     /*拉高*/
 
 
 void relay_init(void);
-unsigned char  relay(int temp);
+void relay(float temp);
 
 #endif
 

@@ -110,13 +110,7 @@ char alwaysCheck(void)
  	 config.last5s=config.now+5;
 	 zigbee_send_id(); //·¢ËÍ±¾»úID
      temp= readWithoutDelay(INSIDE_SENSOR);
-     if (temp>config.heatThreshold) {
- 	     RELAY_OFF(); //debug("off=",(int)temp);
-		 return 1;
- 	 }
-     else  {
-   	     RELAY_ON();//debug("on=",(int)temp);
-	 } 
+     relay(temp);
  }
  
  

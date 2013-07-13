@@ -15,7 +15,7 @@ void relay_init(void){
 *传出 ： 当前继电器状态
 *
 */
-unsigned char  relay(int temp)
+void relay(float temp)
 {
 	if(temp<config.heatThreshold)
 	{
@@ -30,5 +30,4 @@ unsigned char  relay(int temp)
 		//state.Relay = 0 ;
 	}		
 	//return state.Relay;
-	return 0;
 }
