@@ -17,7 +17,9 @@
 
 const char CommonId = 0xFF; //从设备公共ID
 /***************配置设备ID***************/
+#ifndef _DEVICE_ID
 #define _DEVICE_ID 1
+#endif
 /**************************************/
 #if   _DEVICE_ID == 1 
 char devicename[8] = {"DEV00001"};//设备名称
@@ -37,13 +39,21 @@ const char deviceId = 0xB5;//设备ID
 #elif  _DEVICE_ID == 6  
 char devicename[8] = {"DEV00006"};//设备名称
 const char deviceId = 0xB6;//设备ID		
+#elif  _DEVICE_ID == 7  
+char devicename[8] = {"DEV00007"};//设备名称
+const char deviceId = 0xB7;//设备ID		
+#elif  _DEVICE_ID == 8  
+char devicename[8] = {"DEV00008"};//设备名称
+const char deviceId = 0xB8;//设备ID		
+#elif  _DEVICE_ID == 9  
+char devicename[8] = {"DEV00009"};//设备名称
+const char deviceId = 0xB9;//设备ID		
+#elif  _DEVICE_ID == 10  
+char devicename[8] = {"DEV00010"};//设备名称
+const char deviceId = 0xBA;//设备ID		
 #endif
 
-//char *reslut_a ="Dev000001,0001,20120920,12:00,-40.5,12.3,-55.5,-40.4,-40.3";
-
-//char *p2 = "a123456789b12456789c123456789d123456789e123456789f12456789g123456789h12345789i12456789";
 #endif
- 
 
 #define FRAME_LEN     13
 #define STORAGE_DB_AND_SD  0
