@@ -358,8 +358,34 @@ void check( void )
   //温度
  Result.Temperature=read_T_NUM(OUTSIDE_SENSOR); //读两次 避免出错
  Result.Temperature=read_T_NUM(OUTSIDE_SENSOR);
+
  //四舍五入
  Result.Temperature=Round(Result.Temperature);
+
+ //温度修正
+//t>=20 : t=t-0.1
+//-10<= t < 20 : t=t
+//-20<= t < -10 : t=t-0.2
+//-30<= t < -20 : t=t-0.6
+//t<=-30 :t=t-0.6 
+ if( Result.Temperature >= 20) {
+    Result.Temperature = Result.Temperature - 0.1 ; 
+ }
+ else if( Result.Temperature >= -10 ){
+    //Result.Temperature = Result.Temperature ; 
+ 	//do noting
+	;
+ }
+ else if( Result.Temperature >= -20 ){
+    Result.Temperature = Result.Temperature - 0.2 ; 
+ }
+ else if( Result.Temperature >= -30 ){
+    Result.Temperature = Result.Temperature - 0.6 ; 
+ }
+ else if( Result.Temperature < -30 ){
+    Result.Temperature = Result.Temperature - 0.6 ;  
+ }
+ 
  //WCI风冷指数
  Result.WCI = 4.18 *(10*SquareRootFloat(Result.WindSpeed) + 10.45 -  Result.WindSpeed  ) *( 33 - Result.Temperature );
  //ECT等价制冷温度
