@@ -2,11 +2,11 @@
 #define  N_per_Second  (168.64)
 //=2.72*N_Seconds, now N=62。N_per_Second=62*2.72=168.64
 //#define _FOR_FAST_TEST
-
+#define TMP_BUFFER_SIZE 256
 const char tab[]="\t\0";
 const char enter[]="\n\0";
 char buffer[512];
-char TempChar[80]; //存放临时字串
+char TempChar[TMP_BUFFER_SIZE]; //存放临时字串
 struct DATA Result;
 struct tm t;
 unsigned long now =0; //时间寄存器 单位S
@@ -318,6 +318,156 @@ float Round(float x){
 	x=x/10.0;
 	return x;
 }
+/*
+int pow_my(int base,int n)
+{    
+    int result=1;
+    while(n-->0)
+    {
+        result *= base;
+    }
+    return result;
+}
+
+float atof(char *str)
+{
+    int integer=0;
+    int i=0;
+    int j=0;
+    int sum=0;
+    int flag=0;
+    float decimal=0.0;
+    
+    int len=strlen(str);
+    printf("len is %d\n",len);
+    for(i=0;i<len;i++,str++)
+    {
+    if(*str=='.') {flag=1;continue;}
+    if(*str=='-') {bMinus=1;continue;}
+    if(*str!='.'&&flag==0)
+    {
+    sum = sum * 10+(*str-'0');
+    }
+    
+    if(flag==1)
+    {
+    j++;
+    
+    decimal += (float)(*str-'0')/pow_my(10,j);
+    
+    }
+    
+    }
+    if (bMinus)
+    {
+        return -(sum+decimal);
+    }else
+    {
+        return sum+decimal;
+    }
+}
+*/
+
+////////////////////////
+//
+//
+///////////////////////
+void getStr(void){
+    if(Result.ECT > -30.8) {
+        Result.WeiHai = 0; //冻伤危害性小 
+    }
+    else if(Result.ECT <= -30.8 && Result.ECT >-58.4){
+        Result.WeiHai = 1; //冻伤危害性较大
+    }
+    else if(Result.ECT <= -58.4){
+        Result.WeiHai = 2; //冻伤危害性很大
+    }
+	
+    Result.WeiHaiChar = (char *)str_weihai[Result.WeiHai];
+    switch( Result.WeiHai ){
+			case 0 :
+			Result.strH1 = (char *) H01;
+			Result.strH2 = (char *) H02;
+			Result.strH3 = (char *) H03;
+			Result.HighLabor = 0;
+			
+			break;
+			case 1 : 
+			Result.strH1 = (char *) H11;
+			Result.strH2 = (char *) H12;
+			Result.strH3 = (char *) H13;
+			Result.HighLabor = 1;
+			break ;	
+			case 2 :
+			Result.strH1 = (char *) H21;
+			Result.strH2 = (char *) H22;
+			Result.strH3 = (char *) H23;
+			Result.HighLabor = 2;
+			break;
+			default : ;
+    }
+
+    switch( Result.WeiHai ){
+	 		case 0 :
+			Result.strM1 = (char *) M01;
+			Result.strM2 = (char *) M02;
+			Result.strM3 = (char *) M03;
+			Result.MidLabor = 0;
+ 			if(Result.Temperature < -17.7){
+			    Result.strM3 = (char *) "戴面罩；禁油彩。" ;
+				Result.MidLabor = 2;
+			}
+			else if(Result.Temperature < -12){
+			    Result.strM3 = (char *) "禁油彩。        \0";
+				Result.MidLabor = 1;
+			}
+			break;
+			
+			case 1 : 
+			Result.strM1 = (char *) M11;
+			Result.strM2 = (char *) M12;
+			Result.strM3 = (char *) M13;
+			Result.MidLabor = 3;
+			break ;
+			
+			case 2 :
+ 			Result.strM1 = (char *) M21;
+			Result.strM2 = NULL;
+			Result.strM3 = NULL;
+			Result.MidLabor = 4;
+			break ;
+			default :;
+	}
+    switch( Result.WeiHai ){	
+		     case 0 :
+			 if(Result.Temperature < -12) {
+			     Result.strL1 = (char *) L01;
+				 Result.strL2 = (char *) L02;
+			 	 Result.strL3 = (char *) L03;
+				 Result.LowLabor = 1;
+			 } 
+			 else {
+			 	 Result.strL1 = (char *) L01;  
+			 	 Result.strL2 = (char *) L03;
+			 	 Result.strL3 = NULL; 
+				 Result.LowLabor = 0;
+			 }
+			 break;
+			 case 1: 
+			 	 Result.strL1 = (char *) L11;
+			 	 Result.strL2 = (char *) L12;
+			 	 Result.strL3 = (char *) L13;
+				 Result.LowLabor = 2;
+			 break ;
+			 case 2 :
+			 	 Result.strL1 = (char *) L21;
+			 	 Result.strL2 = NULL;
+			 	 Result.strL3 = NULL;
+				 Result.LowLabor = 3;
+			 break;
+			 default : ;
+	} //end switch			
+}
 
 void check( void )
 {
@@ -404,41 +554,12 @@ Result.WSChar[5]='\0';
 Result.WCIChar[7]='\0';
 Result.ECTChar[6]='\0';
 Result.TeqChar[6]='\0';
+
+getStr();
  return ;
 }
-/*
-////////////////////////////////////////////
-//				字符串转换函数
-//   浮点 到  字符串
-////////////////////////////////////////////
-void ftochr(float a,char * dest){//float
-char i=0,j=0,lenth;
-int status;
-char *res;
- res=ftoa(a,&status);  //float to ascii
-lenth=strlen(res);
 
-for(i=0;i <lenth;i++) 
-       {
-	   	dest[i]=res[i];
 
-		if( res[i]=='.'  ) 
-			{
-				dest[i+1]=res[i+1];
-					dest[i+2]='\0';
-						return ;    
-		    }
- 
- 		}
-}
-//////////////////////////////////////////////////////
-//              整型数据变字符串
-//    a  到  dest
-///////////////////////////////////////////////////////
-void itochr(int a,char * dest){ //int to ascii
-	 itoa(dest,a,10); 
-}
-*/
 //////////////////////////////////////////////////////
 //                  结构体 变字符串
 // 将目前存于结构体的数据转换到Temp_Char中。
@@ -452,20 +573,26 @@ void  StructToChar(void)
 				Result.TeqChar
 			   };  //指向数组首地址的指针
   //strcat(Temp_Char,Result.Name);
-  for(i=0;i<=80;i++) TempChar[i]='\0';  //清空数组
+  for(i=0;i<TMP_BUFFER_SIZE;i++) TempChar[i]=0;  //清空数组
     for(i=0;i<=7;i++){
 		strcat(TempChar,ary[i]);  // 按顺序复制字符串
 		strcat(TempChar,tab);     // 字串结尾加上制表符
     }
-				 
-				 otherbyte[0]=otherbyte[0]+Result.WeiHai;
-				 otherbyte[2]=otherbyte[0]+Result.LowLabor;
-				 otherbyte[4]=otherbyte[0]+Result.MidLabor;
-				 otherbyte[6]=otherbyte[0]+Result.HighLabor;
- 
-  strcat(TempChar,otherbyte);  
-  strcat(TempChar,enter);  
-  strcat(TempChar,"\0");
+	strcat(TempChar,Result.WeiHaiChar); 
+	strcat(TempChar,tab);
+	if(Result.strH1) strcat(TempChar,Result.strH1);
+	if(Result.strH2) strcat(TempChar,Result.strH2);
+	if(Result.strH3) strcat(TempChar,Result.strH3);
+	strcat(TempChar,tab);
+	if(Result.strM1) strcat(TempChar,Result.strM1);
+	if(Result.strM2) strcat(TempChar,Result.strM2);
+	if(Result.strM3) strcat(TempChar,Result.strM3);
+	strcat(TempChar,tab);
+	if(Result.strL1) strcat(TempChar,Result.strL1);
+	if(Result.strL2) strcat(TempChar,Result.strL2);
+	if(Result.strL3) strcat(TempChar,Result.strL3);
+	strcat(TempChar,enter);  
+  	strcat(TempChar,"\0\0\0\0\0");
 }
 
 //////////////////////////////////////////////////////
@@ -474,15 +601,15 @@ void  StructToChar(void)
 ///////////////////////////////////////////////////////
 void CharToStruct(char *buf)
 {
-  unsigned char j=0;
+  unsigned char j=0,i;
   unsigned char *p,*q;
+  
   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
 				Result.TeqChar
 			   };  //指向数组首地址的指针
     p=ary[j];
 	q=buf;
-	
 	while(1){
     if(*q =='\n') {*p='\0'; return;} ;
 	if(*q =='\t') {
@@ -495,6 +622,12 @@ void CharToStruct(char *buf)
 	}
     *p++=*q++;
 	}
+	Result.Temperature = atof(Result.TempChar);
+	Result.WindSpeed = atof(Result.WSChar);
+	Result.WCI = atof(Result.WCIChar);
+	Result.ECT = atof(Result.ECTChar);
+	Result.Teq = atof(Result.TeqChar);
+	getStr();
 	return ;
 }
  

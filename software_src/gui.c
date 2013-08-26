@@ -11,7 +11,7 @@ const char M03[]="戴面罩。\0";
 const char M04[]="禁油彩。\0";
 #define L01 M03
 #define L02 M04
-const char L03[]="缩短作业时间。";
+const char L03[]="缩短作业时间。\0";
 //-----//
 #define H11 M04
 #define H12 H03
@@ -26,8 +26,11 @@ const char L12[]="劳动时间<15min；\0";
 #define H21 L11
 #define H22 L12
 #define H23 H03
-const char M21[]="取消户外作业。"; 
+const char M21[]="取消户外作业。\0"; 
 #define L21 M21
+
+const char str_weihai[3][16]={"冻伤危险性小\0","冻伤危险性较大\0","冻伤危险性很大\0"};
+
 const char str_blank[]="----------------"; 
 //#define LEDON   PORTC&=~(1<<7)					   
 //#define LEDOFF  PINC|=(1<<7)
@@ -355,81 +358,28 @@ void _GUI_datashow(char page){
 	 if(page == 2){
 	     LCD_var_disp(1,1,GUI_get_date());
 		 LCD_const_disp(2,1,"冻伤危害性:");
-	 if(Result.WeiHai==0){LCD_const_disp(3,1,"  冻伤危害性小");			 }
-	 else if(Result.WeiHai==1){	LCD_const_disp(3,1,"  冻伤危害性较大");	 }
-	 else if(Result.WeiHai==2){	LCD_const_disp(3,1,"  冻伤危害性很大");	 }
-	 else LCD_const_disp(3,1,"冻伤危害性小。");
-	 }	  
+		 LCD_const_disp(3,1,Result.WeiHaiChar);	 
+	 }	 
 	 if(page==3){
 	     LCD_const_disp(1,1,labelH);		
-	 	 switch( Result.WeiHai ){
-			case 0 :
-			LCD_const_disp(2,1,H01);
-			LCD_const_disp(3,1,H02);
-			LCD_const_disp(4,1,H03);
-			break;
-			case 1 : 
-			LCD_const_disp(2,1,H11);
-			LCD_const_disp(3,1,H12);
-			LCD_const_disp(4,1,H13);
-			break ;	
-			case 2 :
-			LCD_const_disp(2,1,H21);
-			LCD_const_disp(3,1,H22);
-			LCD_const_disp(4,1,H23);
-			break;
-			default : ;
-		}
-	 } 
+ 		 LCD_const_disp(2,1,Result.strH1);
+		 LCD_const_disp(3,1,Result.strH2);
+		 LCD_const_disp(4,1,Result.strH3);
+ 	 } 
 	 if(page==4){
-	 		LCD_const_disp(1,1,labelM);		
-	 		switch( Result.WeiHai ){
-	 			case 0 :
-				LCD_const_disp(2,1,M01);
-				LCD_const_disp(3,1,M02);
-				if(Result.Temperature < -17.7){
-				    LCD_const_disp(4,1,"戴面罩；禁油彩。");
-				}
-				else if(Result.Temperature < -12){
-				    LCD_const_disp(4,1,"禁油彩。        \0");
-				}
-				break;
-				case 1 : 
-			    LCD_const_disp(2,1,M11);
-				LCD_const_disp(3,1,M12);
-				LCD_const_disp(4,1,M13);
-				break ;
-				case 2 :
-				LCD_const_disp(2,1,M21);
-				break ;
-				default :;
-	 		}
-	 }
+	 	 LCD_const_disp(1, 1, labelM);		
+         LCD_const_disp(2, 1, Result.strM1);
+		 LCD_const_disp(3, 1, Result.strM2);
+		 LCD_const_disp(4, 1, Result.strM3);
+ 	 }
 	 if(page==5){
 	     LCD_const_disp(1,1,labelL);		
-	 	 switch( Result.WeiHai ){	
-		     case 0 :
-			 LCD_const_disp(2,1,L01);
-			 if(Result.Temperature < -12) {
-			 LCD_const_disp(3,1,L02);
-			 LCD_const_disp(4,1,L03);
-			 } 
-			 else {
-			 LCD_const_disp(3,1,L03);
-			 }
-			 break;
-			 case 1: 
-			 LCD_const_disp(2,1,L11);
-			 LCD_const_disp(3,1,L12);
-			 LCD_const_disp(3,1,L13);
-			 break ;
-			 case 2 :
-			 LCD_const_disp(2,1,L21);
-			 break;
-			 default : ;
-		} //end switch
-	}  //end if
+  		 LCD_const_disp(2,1,Result.strL1);
+		 LCD_const_disp(3,1,Result.strL2);
+		 LCD_const_disp(4,1,Result.strL3);
+ 	}  //end if
 }
+
 char * GUI_get_date(void) {  
   //格式:12月11日19:00:00
     GUI_date[0]=Result.Date[4]; 

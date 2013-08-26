@@ -1,6 +1,6 @@
 #ifndef _MAIN_H_
 #define _MAIN_H_
-#define SINGLE_ITEM_SIZE 64 
+#define SINGLE_ITEM_SIZE 256 
 char ReadSDFile(char *fnamep,int index, char *data, char mode);//读取一条数据
 void ftochr(float a,char * dest);                  //浮点型转换成字符型
 void itochr(int a,char * dest);                    //整型数据转换成字符型

@@ -5,7 +5,7 @@
 //#define _LCDDEBUG
 //#define _UARTDEBUG
 //#define _DBG_RD_
-//#define _FOR_FAST_TEST
+#define _FOR_FAST_TEST
 //类型定义
 #define INT8   char
 #define UINT8  unsigned char
@@ -68,9 +68,19 @@ struct DATA {
    float    Teq ;	//相当温度
    char  TeqChar[6] ;
    unsigned char    WeiHai		  ;   //冻伤危害性(环境提示)
+   char *WeiHaiChar;
    unsigned char    LowLabor	  ;   //轻度
    unsigned char    MidLabor	  ;   //中度
    unsigned char    HighLabor	  ;   //重度
+   char *strH1;
+   char *strH2;
+   char *strH3;
+   char *strM1;
+   char *strM2;
+   char *strM3;
+   char *strL1;
+   char *strL2;
+   char *strL3;
    };
  struct CONFIG {
  		char Sd; //SD存储使能， =0 禁用； >=1 使能
