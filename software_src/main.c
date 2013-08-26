@@ -165,7 +165,7 @@ void WriteFileHead(void)
 	 FATFS fs;
 	 FIL file;
 	 char fnamep[]="201201.xls\0\0\0"; 
-	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\r\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0";
+	 UINT8 itam[]="DEV000001\t\t\t\t\t\t\t\t\t\t\r\n序号\t日期\t时分\t温度\t风速\t风冷指数\t等价制冷温度\t相当温度\t冻伤危害性\t安静作业\t中等强度作业\t高强度作业\n\0\0\0\0\0\0\0\0";
 	 res=disk_initialize(0);
 	 res = f_mount(0, &fs);
 	 //get_name(fnamep)
