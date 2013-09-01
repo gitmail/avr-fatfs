@@ -37,6 +37,9 @@ void Set_Draw( void );  //  设置为绘图模式
 //W_1byte(0,0,0x34);			//8BIT控制界面，扩充指令集,，绘图显示OFF
 //W_1byte(0,0,0x36);	        //8BIT控制界面，扩充指令集,，绘图显示ON
 //W_1byte(0,0,0x30);	        //进入基本指令集
+void lcm_set_power_high(void);
+void lcm_set_power_low(void);
+
 #endif
 
 

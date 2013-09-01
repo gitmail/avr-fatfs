@@ -20,10 +20,45 @@
 #define LCD_LIGHT_OFF()   LCD_PIN_DDR |= (1<<LCD_BACKLIGHT_SW);LCD_PORT &=~(1<<LCD_BACKLIGHT_SW) 
 #define Clr_RST()   LCD_PIN_DDR |= (1<<LCD_PIN_RST);LCD_PORT &=~(1<<LCD_PIN_RST) 
  
+
+
+ 
 void W_1byte(unsigned char RW, unsigned char RS, unsigned char W_data); 
 void Write_8bits(unsigned int W_bits); 
 void LCD_Init(void); 
 unsigned char LCD_INT(void); 
+
+void lcm_set_power_low(void){
+//温度低时 
+//1 接插件座J25各引脚电平 PIN1=5V, PIN2=0V, PIN3=3.3V, PIN4=GND 
+//2 接插件座J5各引脚电平 PIN1=3.3V, PIN2=0V, PIN3=0V, PIN4=GND
+//3 接插件座J6各引脚电平 PIN1=3.3V, PIN2=3.3V, PIN3=3.3V, PIN4=GND
+    DDRB |=(1<<7);
+	DDRD |=(1<<7);
+	DDRF |=0x0F;
+
+	PORTD &= ~(1<<7); //J25-P2=0
+	PORTB |= (1<<7); //J25-P3=1
+	PORTF &= ~(0x03); //J5-P2=0，J5-P3=0
+	PORTF |= (0x0c); //J6-P2=1,J6-P3=1
+}
+
+void lcm_set_power_high(void){
+//温度高时 
+//1 接插件座J25各引脚电平 PIN1=5V, PIN2=3.3V, PIN3=0V, PIN4=GND 
+//2 接插件座J5各引脚电平 PIN1=3.3V, PIN2=3.3V, PIN3=3.3V, PIN4=GND
+//3 接插件座J6各引脚电平 PIN1=3.3V, PIN2=0V, PIN3=0V, PIN4=GND  
+    DDRB |=(1<<7);
+	DDRD |=(1<<7);
+	DDRF |=0x0F;
+	  
+	PORTD |=(1<<7); //J25-P2=1
+	PORTB &= ~(1<<7); //J25-P3=0
+	PORTF |=(0x03); //J5-P2=1，J5-P3=1
+	PORTF &=~(0x0c); //J6-P2=0,J6-P3=0
+ 
+}
+
 
 unsigned char LCD_SW(unsigned char i)
 {
