@@ -2,7 +2,7 @@ CC = iccavr
 LIB = ilibw
 CFLAGS =  -e -D__ICC_VERSION=722 -DATMega128  -l -g -MLongJump -MHasMul -MEnhanced -Wf-use_elpm 
 ASFLAGS = $(CFLAGS) 
-LFLAGS =  -g -e:0x20000 -ucrtatmega.o -bfunc_lit:0x8c.0x20000 -dram_end:0x10ff -bdata:0x100.0x10ff -dhwstk_size:256 -beeprom:0.4096 -fihx_coff -S2
+LFLAGS =  -g -e:0x20000 -ucrtatmega.o -bfunc_lit:0x8c.0x20000 -dram_end:0x10ff -bdata:0x100.0x10ff -dhwstk_size:384 -beeprom:0.4096 -fihx_coff -S2
 FILES = main.o diskio.o ff.o delay.o sd.o gui.o zigbee.o powercheck.o usart.o SPI.o lcd.o relay.o beep.o DS18B20_driver.o ds1302.o key.o 
 
 MASTER:	$(FILES)

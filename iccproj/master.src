@@ -1,6 +1,7 @@
 [Files]
 ..\software_src\config.h
 ..\software_src\main.c
+..\software_src\main.h
 ..\software_src\diskio.c
 ..\software_src\diskio.h
 ..\software_src\ff.c
@@ -15,7 +16,6 @@
 ..\software_src\zigbee.c
 ..\software_src\zigbee.h
 ..\software_src\delay.h
-..\software_src\main.h
 ..\software_src\powercheck.c
 ..\software_src\powercheck.h
 [Headers]

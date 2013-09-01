@@ -1,9 +1,9 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 //debug选项
-//#define _DEBUG
+#define _DEBUG
 //#define _LCDDEBUG
-//#define _UARTDEBUG
+#define _UARTDEBUG
 //#define _DBG_RD_
 #define _FOR_FAST_TEST
 //类型定义
@@ -94,6 +94,7 @@ struct DATA {
 		int checkDelta; //自动检测间隔
 		char readMode; //读取数据间隔， 0=最后一次 1=按顺序d
 		char heatThreshold; //加热门限
+		char lcd_off_temperature;
 		char autoSend;  //自动发送开关
 		char is_lowpower;
 		char comCmd; //上位机命令  

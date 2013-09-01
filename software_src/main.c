@@ -37,6 +37,7 @@ void initDevices(void){
 	 config.last5s=0; //5s定时器
 	 config.THRESHOLD_delta_sec=60; //一次检测用时
 	 config.heatThreshold = 5; //继电器开启温度 
+	 config.lcd_off_temperature = 0;
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
 	 config.checkDelta = 0;     //
 	 config.autocheck=1;        //自动检测开关
@@ -66,7 +67,7 @@ void main(void){
 //	 UINT8 buf512[513];
 	 char filename[]="201301.xls\0\0\0";
 	 int i=0;
-	 
+	 float tmpf;
 	 initDevices();
 	 dateRefresh(1); //更新前台后台时间
 	 WriteFileHead();//确保文件当前数据存在表头
@@ -77,7 +78,21 @@ void main(void){
 		     GUI_readback(buf512);
 	     }
 	 #endif
+	 readWithoutDelay(INSIDE_SENSOR);
+	 tmpf=0;
+	 for(i=0;i<10;i++){
+	     tmpf += readWithoutDelay(INSIDE_SENSOR); //累计10次
+	 }
 	 
+	 if( tmpf > config.lcd_off_temperature ) //config.lcd_off_temperature=0;
+	 {  //环境温度大于0时开启lcd
+	     lcm_set_power_high();
+	 }
+	 else {
+	 //否则关闭lcd
+	 	 lcm_set_power_low();
+	 }
+	 	 
 	 //selfTest();
 	 GUI_welcome();
 	/*   //FOR DEBUG
@@ -115,6 +130,17 @@ char alwaysCheck(void)
 	 zigbee_send_id(); //发送本机ID
      temp= readWithoutDelay(INSIDE_SENSOR);
      relay(temp);
+	 debug("check power", temp);
+	 if(temp != -0.1){ //如果温度传感器工作正常
+	     if(temp > config.lcd_off_temperature ) //config.lcd_off_temperature=-1;
+	     {  //环境温度大于0时开启lcd
+	         lcm_set_power_high(); 
+	     }
+	     else {
+	     //否则关闭lcd
+	     	 lcm_set_power_low(); 
+	     }
+	 }
  }
  
  
