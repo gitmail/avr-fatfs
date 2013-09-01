@@ -5,8 +5,8 @@
 #define TMP_BUFFER_SIZE 256
 const char tab[]="\t\0";
 const char enter[]="\n\0";
-char buffer[512];
-char TempChar[TMP_BUFFER_SIZE]; //存放临时字串
+char buf512[513];
+unsigned char TempChar[TMP_BUFFER_SIZE]; //存放临时字串
 struct DATA Result;
 struct tm t;
 unsigned long now =0; //时间寄存器 单位S
@@ -63,18 +63,21 @@ void timer1_init(void)
 ////////////////////////////////////////////////////////////////
 void main(void){
 	 UINT8 tmp,keycode;
-	 UINT8 buf512[513];
+//	 UINT8 buf512[513];
 	 char filename[]="201301.xls\0\0\0";
 	 int i=0;
+	 
 	 initDevices();
-	 dateRefresh(1);
-	 WriteFileHead();
-     Result.Index=findIndex(get_name(filename),buf512);
+	 dateRefresh(1); //更新前台后台时间
+	 WriteFileHead();//确保文件当前数据存在表头
+     Result.Index=findIndex(get_name(filename),buf512);//查找上次写的数据位置
+ 
 	 #ifdef _DBG_RD_  
 	 	 while(1){
 		     GUI_readback(buf512);
 	     }
 	 #endif
+	 
 	 //selfTest();
 	 GUI_welcome();
 	/*   //FOR DEBUG
@@ -85,6 +88,7 @@ void main(void){
 	   zigbee_send_date();
 	 }
 	 */
+	 
 	 while(alwaysCheck()){
 	    tmp=GUI_mainmeu();
 		switch(tmp){
@@ -174,9 +178,9 @@ void WriteFileHead(void)
 	 f_close(&file);
 	 f_mount(0, NULL);
 } /////////////////////////////////////////////////
-//       写入文件函数 
+//       数据追加写入文件函数 
 //(创建)打开文件 
-// data 指向欲写入的的字符串 64byt 
+// data 指向欲写入的的字符串 256byt 
 //////////////////////////////////////////////// 
 void WriteSDFile(void)   
 {
@@ -184,7 +188,7 @@ void WriteSDFile(void)
 	FRESULT res;
 	FATFS fs;
     FIL file;
-	char fnamep[13];
+	char fnamep[]="201201.xls\0\0\0"; 
 	long lenth=0;
 	disk_initialize(0);
 	res = f_mount(0, &fs);
@@ -566,33 +570,53 @@ getStr();
 ///////////////////////////////////////////////////////
 void  StructToChar(void)
 { 
-  unsigned char i;
-  char otherbyte[]="0\t0\t0\t0";
+  unsigned int i=0; //!!!!!!!!!!!!!!!!!!注意数据类型，这个BUG浪费我一天时间！！！！！！！！
+  //顺便记录下
+  //变量i用于清除数组TempChar[]，前面版本的TempChar[]大小只有64字节，所以i为unsigned char类型;
+  //当TempChar[]数组大小增加到256字节时，i已经不能遍历数据进行清零工作；
+  //所以数据会一直累计变长，造成数据结构损坏。
+  //另外一个教训是数组和字符串确实区别很大，混用很容易出错；
+  //最后一个要说的是，当bug 是由增大某些变量长度引起的是，要重点检查各变量的边界条件的问题，
+  //而检查非程序流程的错误。
+  
+  char bk1[]=" \0";
   char *(ary[])={Result.IndexChar,Result.Date,Result.Time,
  	  			Result.TempChar,Result.WSChar,Result.WCIChar,Result.ECTChar,
 				Result.TeqChar
 			   };  //指向数组首地址的指针
-  //strcat(Temp_Char,Result.Name);
-  for(i=0;i<TMP_BUFFER_SIZE;i++) TempChar[i]=0;  //清空数组
+			   
+    for(i=0;i<TMP_BUFFER_SIZE;i++){ TempChar[i]=0;} //清空数组
+ 
     for(i=0;i<=7;i++){
 		strcat(TempChar,ary[i]);  // 按顺序复制字符串
 		strcat(TempChar,tab);     // 字串结尾加上制表符
     }
+	
 	strcat(TempChar,Result.WeiHaiChar); 
 	strcat(TempChar,tab);
 	if(Result.strH1) strcat(TempChar,Result.strH1);
+	strcat(TempChar,bk1);
 	if(Result.strH2) strcat(TempChar,Result.strH2);
+	strcat(TempChar,bk1);
 	if(Result.strH3) strcat(TempChar,Result.strH3);
 	strcat(TempChar,tab);
+	
 	if(Result.strM1) strcat(TempChar,Result.strM1);
+	strcat(TempChar,bk1);
 	if(Result.strM2) strcat(TempChar,Result.strM2);
+	strcat(TempChar,bk1);
 	if(Result.strM3) strcat(TempChar,Result.strM3);
 	strcat(TempChar,tab);
+	
 	if(Result.strL1) strcat(TempChar,Result.strL1);
+	strcat(TempChar,bk1);
 	if(Result.strL2) strcat(TempChar,Result.strL2);
+	strcat(TempChar,bk1);
 	if(Result.strL3) strcat(TempChar,Result.strL3);
 	strcat(TempChar,enter);  
-  	strcat(TempChar,"\0\0\0\0\0");
+  	
+	strcat(TempChar,"\0\0\0\0\0");
+ 
 }
 
 //////////////////////////////////////////////////////

@@ -28,10 +28,11 @@ const char L12[]="劳动时间<15min；\0";
 #define H23 H03
 const char M21[]="取消户外作业。\0"; 
 #define L21 M21
+const char blank[]="                \0"; 
 
-const char str_weihai[3][16]={"冻伤危险性小\0","冻伤危险性较大\0","冻伤危险性很大\0"};
+const char str_weihai[3][17]={"冻伤危险性小\0","冻伤危险性较大\0","冻伤危险性很大\0"};
 
-const char str_blank[]="----------------"; 
+const char str_blank[]="                \0"; 
 //#define LEDON   PORTC&=~(1<<7)					   
 //#define LEDOFF  PINC|=(1<<7)
 char GUI_date[17]="09月19日18:00:00\0";
@@ -224,7 +225,7 @@ else {
 				//时间更新 开启风速检测 等待检测 不支持翻页
 				if(windcounter==0){
 				    windcounter=1; //清零开启风速计数器
-					timer1_init(); //开启风速传感器技术
+					timer1_init(); //开启风速传感器计数
 				}
 				if(page == 0 ){
 				
@@ -334,6 +335,16 @@ else {
 	    delayms(10); 
 	}//end while
 }//end function
+
+void _echo_line(char h, char v, const char *str ){
+    if(str==NULL){
+	    LCD_const_disp(h,v, blank);
+	}
+	else {
+	    LCD_const_disp(h, v, str);
+	}
+}
+
 void _GUI_datashow(char page){
 	if(page == 0){
  	//显示日期时间
@@ -361,22 +372,22 @@ void _GUI_datashow(char page){
 		 LCD_const_disp(3,1,Result.WeiHaiChar);	 
 	 }	 
 	 if(page==3){
-	     LCD_const_disp(1,1,labelH);		
- 		 LCD_const_disp(2,1,Result.strH1);
-		 LCD_const_disp(3,1,Result.strH2);
-		 LCD_const_disp(4,1,Result.strH3);
+	     _echo_line(1,1,labelH);		
+ 		 _echo_line(2,1,Result.strH1);
+		 _echo_line(3,1,Result.strH2);
+		 _echo_line(4,1,Result.strH3);
  	 } 
 	 if(page==4){
-	 	 LCD_const_disp(1, 1, labelM);		
-         LCD_const_disp(2, 1, Result.strM1);
-		 LCD_const_disp(3, 1, Result.strM2);
-		 LCD_const_disp(4, 1, Result.strM3);
+	 	 _echo_line(1, 1, labelM);		
+         _echo_line(2, 1, Result.strM1);
+		 _echo_line(3, 1, Result.strM2);
+		 _echo_line(4, 1, Result.strM3);
  	 }
 	 if(page==5){
-	     LCD_const_disp(1,1,labelL);		
-  		 LCD_const_disp(2,1,Result.strL1);
-		 LCD_const_disp(3,1,Result.strL2);
-		 LCD_const_disp(4,1,Result.strL3);
+	     _echo_line(1,1,labelL);		
+  		 _echo_line(2,1,Result.strL1);
+		 _echo_line(3,1,Result.strL2);
+		 _echo_line(4,1,Result.strL3);
  	}  //end if
 }
 

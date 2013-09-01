@@ -41,7 +41,7 @@ extern const char L12[];
 extern const char M21[]; 
 #define L21 M21
 
-extern const char str_weihai[3][16];
+extern const char str_weihai[3][17];
 
 
 //按键操作 基本规则
