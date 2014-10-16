@@ -36,8 +36,8 @@ void initDevices(void){
 	 config.comCmd = 0; //无上位机命令
 	 config.last5s=0; //5s定时器
 	 config.THRESHOLD_delta_sec=60; //一次检测用时
-	 config.heatThreshold = 5; //继电器开启温度 
-	 config.lcd_off_temperature = 0;
+	 config.heatThreshold = -5; //继电器开启温度 
+	 config.lcd_off_temperature = -5;
 	 config.checkDeltaTime=20;  //自动检测模式 时间间隔	 
 	 config.checkDelta = 0;     //
 	 config.autocheck=1;        //自动检测开关
@@ -64,10 +64,9 @@ void timer1_init(void)
 ////////////////////////////////////////////////////////////////
 void main(void){
 	 UINT8 tmp,keycode;
-//	 UINT8 buf512[513];
 	 char filename[]="201301.xls\0\0\0";
 	 int i=0;
-	 float tmpf;
+	 int tmp1;
 	 initDevices();
 	 dateRefresh(1); //更新前台后台时间
 	 WriteFileHead();//确保文件当前数据存在表头
@@ -78,21 +77,23 @@ void main(void){
 		     GUI_readback(buf512);
 	     }
 	 #endif
-	 readWithoutDelay(INSIDE_SENSOR);
-	 tmpf=0;
-	 for(i=0;i<10;i++){
-	     tmpf += readWithoutDelay(INSIDE_SENSOR); //累计10次
-	 }
 	 
-	 if( tmpf > config.lcd_off_temperature ) //config.lcd_off_temperature=0;
+	 //初始化读温度，决定是否开屏幕
+	 readWithoutDelay(INSIDE_SENSOR); //
+	 tmp1 = 0;
+	 for(i=0;i<8;i++){
+	     tmp1 +=(int) readWithoutDelay(INSIDE_SENSOR); //累计10次
+	 }
+	  
+	 if( tmp1 > config.lcd_off_temperature*8) //config.lcd_off_temperature=0;
 	 {  //环境温度大于0时开启lcd
-	     lcm_set_power_high();
+	     lcm_set_power_high(); 
 	 }
 	 else {
 	 //否则关闭lcd
-	 	 lcm_set_power_low();
+	 	 lcm_set_power_low(); 
 	 }
-	 	 
+
 	 //selfTest();
 	 GUI_welcome();
 	/*   //FOR DEBUG
@@ -119,7 +120,7 @@ void main(void){
 }
 char alwaysCheck(void)
 {
- float temp;
+ int temp;
  RecDeal(); //zigbee data deal
   	 
  power_state_refresh();
@@ -128,19 +129,19 @@ char alwaysCheck(void)
  {   
  	 config.last5s=config.now+5;
 	 zigbee_send_id(); //发送本机ID
-     temp= readWithoutDelay(INSIDE_SENSOR);
+     temp=read_T_NUM(INSIDE_SENSOR);
      relay(temp);
-	 debug("check power", temp);
-	 if(temp != -0.1){ //如果温度传感器工作正常
-	     if(temp > config.lcd_off_temperature ) //config.lcd_off_temperature=-1;
-	     {  //环境温度大于0时开启lcd
-	         lcm_set_power_high(); 
-	     }
-	     else {
-	     //否则关闭lcd
-	     	 lcm_set_power_low(); 
-	     }
+	 if(temp > config.lcd_off_temperature ) //config.lcd_off_temperature=-1;
+	 {  //环境温度大于0时开启lcd
+	     lcm_set_power_high(); 
+		 //debug("open, thres=", config.lcd_off_temperature);
 	 }
+	 else {
+	    //否则关闭lcd
+	     lcm_set_power_low(); 
+		 //debug("close, thres=", config.lcd_off_temperature);
+	 }
+
  }
  
  
@@ -238,9 +239,11 @@ char ReadSDFile(char *fnamep,int index, char *data, char mode)
     FIL file;
 	static int indexoffset;
 	unsigned int max;
+	long lenth=0;
 	disk_initialize(0);
     res = f_mount(0, &fs);
-    res = f_open(&file,fnamep,FA_READ);  
+    res = f_open(&file,fnamep,FA_READ); 
+	 
     if(res==FR_NO_FILE) {
 	data=NULL;
     #if _debug >= 1 
@@ -250,6 +253,14 @@ char ReadSDFile(char *fnamep,int index, char *data, char mode)
     #endif 
     return res;
     }   
+	
+	lenth=file.fsize;   //文件尾部为 file.size 
+	//debug("size=",0xff);
+	//PrintLong(lenth);
+	if(lenth < (128 + SINGLE_ITEM_SIZE) ) {
+ 		return FR_NO_FILE;
+	}
+	
     max = (file.fsize-128)/SINGLE_ITEM_SIZE;
 	if(mode == 0){ //绝对位置模式
 		indexoffset = index;

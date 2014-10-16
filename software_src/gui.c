@@ -589,8 +589,9 @@ void GUI_readback(char *buf){
 	}
 	//2 显示当前月份
 	get_name(file_buf);
-	LCD_const_disp(1,1,"查找数据:");
-	LCD_const_disp(2,2,file_buf);
+	LCD_const_disp(2,1,"将要查找数据:");
+	LCD_const_disp(3,3,file_buf);
+	delayms(1000);
 	#ifdef _DBG_RD_
 		   PrintString_n(file_buf);
 	#endif
@@ -610,7 +611,7 @@ void GUI_readback(char *buf){
 label_recheck:	
 	LCD_Init(); //清屏
 	LCD_CLR();  
-	if(res == 0){ //找到并已经确认文件
+	if(res == 0){ //找到sd卡并已经确认要读取的文件
 		   LCD_const_disp(1,1,"菜单/ 查询");
    		   LCD_const_disp(2,3,"按顺序");
 		   LCD_const_disp(3,3,"最后一次");		 
@@ -657,10 +658,15 @@ label_recheck:
 				key=0;
 		    } //end of while
 			if(config.readMode==READ_MODE_LAST){
-			    ReadSDFile(file_buf,65535,buf,0); //最后一条
+			    res = ReadSDFile(file_buf,65535,buf,0); //最后一条
 			}
 			else {
-			    ReadSDFile(file_buf,1,buf,0); //读第一条
+			    res = ReadSDFile(file_buf,1,buf,0); //读第一条
+			}
+			if(res == FR_NO_FILE){
+			    LCD_const_disp(2,1,"  本月尚无记录。");
+				delayms(1000);
+				return ;
 			}
 			CharToStruct(buf);      //转换
 			while(alwaysCheck()){
@@ -711,7 +717,6 @@ label_recheck:
 					if(page<5) page++;
 	  				else{
 						goto next_item;
-					}
 				}
 				if(key==ldown){ //长按下键 ： 页面加10条·
 					LCD_CLR();
@@ -721,6 +726,7 @@ label_recheck:
 	 				ReadSDFile(file_buf,10,buf,1); //偏移到下10条
 					CharToStruct(buf);
 				}
+					}
 				//右键短按  返回
 				if(key == right) {
 				    LCD_CLR();

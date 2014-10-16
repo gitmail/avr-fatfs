@@ -19,7 +19,7 @@
 
 
 void relay_init(void);
-void relay(float temp);
+void relay(signed int temp);
 
 #endif
 

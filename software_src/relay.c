@@ -15,7 +15,7 @@ void relay_init(void){
 *传出 ： 当前继电器状态
 *
 */
-void relay(float temp)
+void relay(signed int temp)
 {
 	if(temp<config.heatThreshold)
 	{
