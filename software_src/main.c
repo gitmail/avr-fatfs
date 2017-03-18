@@ -121,6 +121,13 @@ void main(void){
 char alwaysCheck(void)
 {
  int temp;
+ 	/* 跨天时间错乱bug，已经修复
+	#ifdef _UARTDEBUG
+	    unsigned char tmp_buf_for_time[30];
+        sprintf(tmp_buf_for_time, "TIME=%lu\r\n", config.now);
+		PrintString(tmp_buf_for_time);
+	#endif
+	*/ 
  RecDeal(); //zigbee data deal
   	 
  power_state_refresh();
@@ -143,7 +150,7 @@ char alwaysCheck(void)
 	 }
 
  }
- 
+ 	   
  
  return 1;
 }
