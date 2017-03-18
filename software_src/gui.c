@@ -756,6 +756,26 @@ void GUI_welcome(void){
 	beep(0,1);
 	
 }
+unsigned long  
+mktime(const unsigned int year0, const unsigned int mon0,  
+       const unsigned int day, const unsigned int hour,  
+       const unsigned int min, const unsigned int sec)  
+{  
+    unsigned int mon = mon0, year = year0;  
+  
+    /* 1..12 -> 11,12,1..10 */  
+    if (0 >= (int) (mon -= 2)) {  
+        mon += 12;  /* Puts Feb last since it has leap day */  
+        year -= 1;  
+    }  
+  
+    return ((((unsigned long)  
+          (year/4 - year/100 + year/400 + 367*mon/12 + day) +  
+          year*365 - 719499  
+        )*24 + hour /* now have hours */  
+      )*60 + min /* now have minutes */  
+    )*60 + sec; /* finally seconds */  
+}  
 
 ////////////////////////////////////
 //  函数作用
@@ -795,6 +815,9 @@ void dateRefresh(unsigned char readhardware)
 	Result.Time[7]=t.tm_sec%10+'0';
 	Result.Time[8]='\0'; 
 	}
-    config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //更新系统心跳
-	
+    //config.now =t.tm_hour*3600 + t.tm_min*60 + t.tm_sec; //更新系统心跳
+	config.now =mktime(t.tm_year, t.tm_mon,  
+       t.tm_mday, t.tm_hour,  
+       t.tm_min, t.tm_sec);
+
 }
